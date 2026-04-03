@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { generateCourseStructure } from '../api/gemini';
-import { fetchCourseThumbnail } from '../api/unsplash';
+import { getPexelsImage } from '../api/pexelsApi';
 import { useCourse } from '../context/CourseContext';
 
 /**
@@ -23,18 +23,24 @@ export function useCourseGenerator() {
   const [structureError, setStructureError] = useState(null);
 
   /**
-   * Fetch course thumbnail from Unsplash
+   * Fetch course thumbnail from Pexels
    */
   const fetchThumbnailAsync = useCallback(async (title) => {
     setThumbnailLoading(true);
     
     try {
-      const thumbnailData = await fetchCourseThumbnail(title);
-      if (thumbnailData) {
-        setThumbnail(thumbnailData);
+      const pexelsImage = await getPexelsImage(title);
+      if (pexelsImage) {
+        setThumbnail({
+          url: pexelsImage.url,
+          photographer: pexelsImage.photographer,
+          photographerUrl: pexelsImage.photographerUrl,
+          altDescription: pexelsImage.alt || title,
+          source: 'pexels',
+        });
       }
     } catch (error) {
-      console.warn('Failed to fetch thumbnail, using fallback');
+      console.warn('Failed to fetch Pexels thumbnail, using fallback');
     } finally {
       setThumbnailLoading(false);
     }

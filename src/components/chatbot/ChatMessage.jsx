@@ -1,12 +1,133 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { User, Bot } from 'lucide-react';
+import { User, Bot, ImageOff } from 'lucide-react';
+import VisualChart from '../course-viewer/VisualChart';
+import VisualTimeline from '../course-viewer/VisualTimeline';
+import VisualProcessFlow from '../course-viewer/VisualProcessFlow';
+import VisualTable from '../course-viewer/VisualTable';
+import VisualInfographic from '../course-viewer/VisualInfographic';
+import { getSectionImage } from '../../api/imageSearch';
+
+// Visual renderer for chat messages
+function ChatVisual({ visual }) {
+  const [imageData, setImageData] = useState(null);
+  const [imageLoading, setImageLoading] = useState(false);
+  const [imageError, setImageError] = useState(false);
+
+  useEffect(() => {
+    if (visual?.type === 'image' && visual?.data?.searchQuery) {
+      setImageLoading(true);
+      getSectionImage(visual.data.searchQuery, visual.data.imageType || 'auto')
+        .then(img => {
+          setImageData(img);
+          setImageLoading(false);
+        })
+        .catch(() => {
+          setImageError(true);
+          setImageLoading(false);
+        });
+    }
+  }, [visual]);
+
+  if (!visual || !visual.type) return null;
+
+  const { type, data } = visual;
+
+  switch (type) {
+    case 'chart':
+      return (
+        <VisualChart
+          type={data.chartType || 'bar'}
+          data={data.data}
+          title={data.title}
+          description={data.description}
+          compact
+          className="mt-3"
+        />
+      );
+
+    case 'timeline':
+      return (
+        <VisualTimeline
+          events={data.events}
+          title={data.title}
+          compact
+          className="mt-3"
+        />
+      );
+
+    case 'process':
+      return (
+        <VisualProcessFlow
+          steps={data.steps}
+          title={data.title}
+          compact
+          className="mt-3"
+        />
+      );
+
+    case 'table':
+      return (
+        <VisualTable
+          columns={data.columns}
+          rows={data.rows}
+          title={data.title}
+          compact
+          className="mt-3"
+        />
+      );
+
+    case 'infographic':
+      return (
+        <VisualInfographic
+          stats={data.stats}
+          title={data.title}
+          layout="row"
+          className="mt-3"
+        />
+      );
+
+    case 'image':
+      if (imageLoading) {
+        return (
+          <div className="mt-3 rounded-lg overflow-hidden bg-white/5 animate-pulse h-32" />
+        );
+      }
+      if (imageError || !imageData) {
+        return (
+          <div className="mt-3 rounded-lg overflow-hidden bg-white/5 h-32 flex items-center justify-center">
+            <ImageOff className="w-8 h-8 text-white/20" />
+          </div>
+        );
+      }
+      return (
+        <div className="mt-3 rounded-lg overflow-hidden">
+          <img
+            src={imageData.url || imageData.thumbnail}
+            alt={data.caption || data.searchQuery}
+            className="w-full h-auto rounded-lg"
+            onError={() => setImageError(true)}
+          />
+          {data.caption && (
+            <p className="text-xs text-white/50 mt-1">{data.caption}</p>
+          )}
+        </div>
+      );
+
+    default:
+      return null;
+  }
+}
 
 function ChatMessage({ message }) {
-  const { role, content, timestamp } = message;
+  const { role, content, timestamp, visual } = message;
   const isUser = role === 'user';
+
+  // Handle both string content and object content (from new visual API)
+  const textContent = typeof content === 'object' ? content.text : content;
+  const visualData = typeof content === 'object' ? content.visual : visual;
 
   const messageVariants = {
     initial: {
@@ -80,14 +201,19 @@ function ChatMessage({ message }) {
           {/* Content */}
           {isUser ? (
             <p className="text-sm leading-relaxed whitespace-pre-wrap">
-              {content}
+              {textContent}
             </p>
           ) : (
-            <div className="text-sm leading-relaxed markdown-content prose prose-sm prose-invert max-w-none">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                {content}
-              </ReactMarkdown>
-            </div>
+            <>
+              <div className="text-sm leading-relaxed markdown-content prose prose-sm prose-invert max-w-none">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {textContent || ''}
+                </ReactMarkdown>
+              </div>
+              
+              {/* Visual content */}
+              {visualData && <ChatVisual visual={visualData} />}
+            </>
           )}
 
           {/* Timestamp */}

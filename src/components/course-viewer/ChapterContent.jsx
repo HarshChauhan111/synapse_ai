@@ -1,8 +1,95 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { Lightbulb, CheckCircle, BookOpen } from 'lucide-react';
+import { Lightbulb, CheckCircle, BookOpen, ImageOff } from 'lucide-react';
+import { getSectionImage } from '../../api/imageSearch';
+import WikipediaPanel from './WikipediaPanel';
+import GeminiVisualization from './GeminiVisualization';
+
+// Inline section image component
+function SectionInlineImage({ searchQuery, caption, accentColor }) {
+  const [imageData, setImageData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    if (!searchQuery) {
+      setLoading(false);
+      return;
+    }
+    
+    getSectionImage(searchQuery, 'auto')
+      .then(img => {
+        setImageData(img);
+        setLoading(false);
+      })
+      .catch(() => {
+        setError(true);
+        setLoading(false);
+      });
+  }, [searchQuery]);
+
+  if (!searchQuery) return null;
+
+  if (loading) {
+    return (
+      <div className="my-6 rounded-xl overflow-hidden bg-white/5 h-48 animate-pulse" />
+    );
+  }
+
+  if (error || !imageData) {
+    return (
+      <div className="my-6 rounded-xl overflow-hidden bg-white/5 h-48 flex items-center justify-center">
+        <ImageOff className="w-10 h-10 text-white/20" />
+      </div>
+    );
+  }
+
+  return (
+    <motion.figure
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      className="my-6 rounded-xl overflow-hidden"
+      style={{ borderColor: `${accentColor}30`, borderWidth: 1 }}
+    >
+      <div className="relative aspect-video overflow-hidden">
+        <img
+          src={imageData.url || imageData.thumbnail}
+          alt={caption || searchQuery}
+          className="w-full h-full object-cover"
+          onError={() => setError(true)}
+        />
+        {imageData.source && (
+          <div className="absolute top-3 right-3 px-2 py-1 rounded-full text-xs font-medium bg-black/50 text-white/80">
+            {imageData.source}
+          </div>
+        )}
+      </div>
+      {caption && (
+        <figcaption className="p-3 text-sm text-white/60 bg-white/5 border-t border-white/5">
+          {caption}
+        </figcaption>
+      )}
+    </motion.figure>
+  );
+}
+
+/**
+ * Determine which visualization type is best for a section
+ */
+function getVisualizationType(heading, body) {
+  const combined = `${heading} ${body}`.toLowerCase();
+  
+  if (/\bstep|process|workflow|pipeline|cycle|phase\b/.test(combined)) return 'diagram';
+  if (/\bstatistic|percent|growth|data|compare|ratio|metric\b/.test(combined)) return 'chart';
+  if (/\barchitecture|struct|system|component|layer|module\b/.test(combined)) return 'diagram';
+  if (/\btimeline|evolution|history|progress\b/.test(combined)) return 'animation';
+  if (/\banimation|transition|transform|motion|dynamic\b/.test(combined)) return 'animation';
+  
+  return 'diagram';
+}
 
 function ChapterContent({ chapterData, chapterIndex }) {
   const {
@@ -10,6 +97,7 @@ function ChapterContent({ chapterData, chapterIndex }) {
     keyTakeaways,
     chapterSummary,
     accentColor,
+    chapterTitle,
   } = chapterData;
 
   const sectionVariants = {
@@ -23,6 +111,12 @@ function ChapterContent({ chapterData, chapterIndex }) {
 
   return (
     <div className="max-w-4xl mx-auto px-6 py-12 space-y-12">
+      {/* Wikipedia Knowledge Panel for the chapter topic */}
+      <WikipediaPanel
+        topic={chapterTitle}
+        accentColor={accentColor}
+      />
+
       {/* Sections */}
       {sections.map((section, index) => (
         <motion.section
@@ -44,6 +138,24 @@ function ChapterContent({ chapterData, chapterIndex }) {
               {section.body}
             </ReactMarkdown>
           </div>
+
+          {/* Inline image for first two sections only (to limit API calls) */}
+          {index < 2 && section.heading && (
+            <SectionInlineImage
+              searchQuery={`${section.heading} ${chapterTitle || ''}`.trim()}
+              caption={section.heading}
+              accentColor={accentColor}
+            />
+          )}
+
+          {/* Gemini AI Visualization - for every 3rd section (index 2, 5, etc.) */}
+          {index === 2 && (
+            <GeminiVisualization
+              topic={`${section.heading} - ${chapterTitle}`}
+              type={getVisualizationType(section.heading, section.body)}
+              accentColor={accentColor}
+            />
+          )}
 
           {/* Callout box */}
           {section.hasCallout && section.calloutText && (

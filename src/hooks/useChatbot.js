@@ -63,7 +63,14 @@ export function useChatbotHook() {
         userMessage
       );
 
-      addAssistantMessage(response);
+      // Handle both new JSON format and legacy string format
+      if (typeof response === 'object' && response.text) {
+        // New format with potential visual data
+        addAssistantMessage(response.text, response.visual);
+      } else {
+        // Legacy string format
+        addAssistantMessage(response);
+      }
     } catch (err) {
       const errorMessage = err.message || 'Failed to get response. Please try again.';
       setError(errorMessage);

@@ -342,26 +342,97 @@ Rules:
 };
 
 /**
- * Chat with AI tutor - context-aware responses
+ * Chat with AI tutor - context-aware responses with visual data
  */
 export const chatWithTutor = async (courseTitle, chapterTitle, chapterContent, conversationHistory, userMessage) => {
   const systemContext = `You are an expert AI tutor for the course "${courseTitle}", currently on chapter "${chapterTitle}".
 
 Chapter content summary: ${chapterContent}
 
-Answer student questions helpfully, concisely, and encouragingly.
-If a question is unrelated to the course, gently redirect.
-Keep responses under 150 words unless a detailed explanation is truly needed.
-Use markdown formatting for better readability when appropriate.`;
+Your response MUST be a valid JSON object with this exact structure:
+{
+  "text": "Your markdown-formatted answer here. Be helpful, concise, and encouraging.",
+  "visual": null or {
+    "type": "chart" | "timeline" | "process" | "table" | "infographic" | "image",
+    "data": <visual-specific data object>
+  }
+}
+
+VISUAL DATA FORMATS:
+
+For "chart" type:
+{
+  "type": "chart",
+  "data": {
+    "chartType": "bar" | "line" | "pie" | "area" | "radar",
+    "title": "Chart title",
+    "description": "What this shows",
+    "data": [{ "name": "Label", "value": 42 }, ...]
+  }
+}
+
+For "timeline" type:
+{
+  "type": "timeline",
+  "data": {
+    "title": "Timeline title",
+    "events": [{ "year": "2020", "title": "Event", "description": "Details" }, ...]
+  }
+}
+
+For "process" type:
+{
+  "type": "process",
+  "data": {
+    "title": "Process title",
+    "steps": [{ "title": "Step 1", "description": "What to do" }, ...]
+  }
+}
+
+For "table" type:
+{
+  "type": "table",
+  "data": {
+    "title": "Comparison",
+    "columns": ["Feature", "Option A", "Option B"],
+    "rows": [["Feature 1", true, false], ["Feature 2", "value", "value"]]
+  }
+}
+
+For "infographic" type:
+{
+  "type": "infographic",
+  "data": {
+    "title": "Key Stats",
+    "stats": [{ "label": "Users", "value": "10M", "icon": "users" }, ...]
+  }
+}
+
+For "image" type (will fetch real image):
+{
+  "type": "image",
+  "data": {
+    "searchQuery": "keyword to search for real photo",
+    "imageType": "real" | "educational" | "diagram",
+    "caption": "Image caption"
+  }
+}
+
+RULES:
+- Include visual only when it genuinely helps (comparisons, data, processes, timelines)
+- Keep text response under 150 words unless detailed explanation truly needed
+- Use markdown in text field for formatting
+- If no visual needed, set visual to null
+- Be encouraging and helpful`;
 
   return withRetry(async () => {
     const model = getModel();
     const messages = [
       { role: 'user', parts: [{ text: systemContext }] },
-      { role: 'model', parts: [{ text: 'I understand. I\'m ready to help students with this chapter.' }] },
+      { role: 'model', parts: [{ text: '{"text": "I understand. I\'m ready to help students with this chapter, and I\'ll include helpful visuals when appropriate.", "visual": null}' }] },
       ...conversationHistory.map(msg => ({
         role: msg.role === 'user' ? 'user' : 'model',
-        parts: [{ text: msg.content }]
+        parts: [{ text: typeof msg.content === 'object' ? JSON.stringify(msg.content) : msg.content }]
       })),
       { role: 'user', parts: [{ text: userMessage }] }
     ];
@@ -370,10 +441,61 @@ Use markdown formatting for better readability when appropriate.`;
       const chat = model.startChat({ history: messages.slice(0, -1) });
       const result = await chat.sendMessage(userMessage);
       const response = await result.response;
-      return response.text();
+      const text = response.text();
+      
+      // Try to parse as JSON for visual data
+      try {
+        const parsed = parseGeminiJSON(text);
+        return parsed;
+      } catch {
+        // If not JSON, return as plain text response
+        return {
+          text: text,
+          visual: null
+        };
+      }
     } catch (error) {
       console.error('Error in chatbot:', error);
       throw new Error('Failed to get response. Please try again.');
+    }
+  });
+};
+
+/**
+ * Generate visualization code (HTML/CSS/JS) for advanced diagrams
+ */
+export const generateVisualization = async (type, topic, data = null) => {
+  const prompt = `Generate a self-contained visualization for: "${topic}"
+Type: ${type}
+${data ? `Data: ${JSON.stringify(data)}` : ''}
+
+Return ONLY valid JSON:
+{
+  "html": "<div>...</div>",
+  "css": "/* scoped styles */",
+  "js": "// optional animation/interaction code",
+  "title": "Visualization title",
+  "description": "What this shows"
+}
+
+Rules:
+- HTML must be a single container div with inline styles OR use the provided CSS
+- CSS should be scoped (use unique class names)
+- JS is optional, only for animations
+- Keep it clean, educational, visually appealing
+- Use modern CSS (flex, grid, gradients)
+- Color scheme: dark background (#0a0a0f), accent colors (#6366f1, #8b5cf6, #ec4899)`;
+
+  return withRetry(async () => {
+    const model = getModel();
+    try {
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      const text = response.text();
+      return parseGeminiJSON(text);
+    } catch (error) {
+      console.error('Error generating visualization:', error);
+      throw new Error('Failed to generate visualization.');
     }
   });
 };

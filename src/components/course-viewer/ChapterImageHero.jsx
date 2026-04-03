@@ -1,27 +1,77 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { buildPollinationsUrl, enhanceImagePrompt, generateChapterGradient } from '../../api/pollinations';
+import { getChapterHeroImage } from '../../api/imageSearch';
 
 function ChapterImageHero({ imagePrompt, accentColor, chapterIndex, layout }) {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
-
-  const enhancedPrompt = enhanceImagePrompt(imagePrompt, chapterIndex);
-  const imageUrl = buildPollinationsUrl(enhancedPrompt, {
-    width: 1200,
-    height: 600,
-    nologo: true,
-    seed: chapterIndex * 1000, // Consistent seed per chapter
-  });
+  const [imageUrl, setImageUrl] = useState(null);
+  const [imageSource, setImageSource] = useState(null);
 
   const fallbackGradient = generateChapterGradient(accentColor, chapterIndex);
+
+  // Try to fetch a real image from Pexels/Wikipedia first, fall back to Pollinations
+  useEffect(() => {
+    let cancelled = false;
+
+    const fetchImage = async () => {
+      try {
+        // Try Pexels/Wikipedia first via unified search
+        const result = await getChapterHeroImage(
+          '', // courseTitle not needed for search
+          imagePrompt,
+          'auto',
+          chapterIndex
+        );
+        
+        if (!cancelled && result?.url) {
+          setImageUrl(result.url);
+          setImageSource(result.source);
+          return;
+        }
+      } catch (err) {
+        console.warn('Failed to fetch real image, using Pollinations:', err);
+      }
+
+      // Fallback to Pollinations AI-generated image
+      if (!cancelled) {
+        const enhancedPrompt = enhanceImagePrompt(imagePrompt, chapterIndex);
+        const pollinationsUrl = buildPollinationsUrl(enhancedPrompt, {
+          width: 1200,
+          height: 600,
+          nologo: true,
+          seed: chapterIndex * 1000,
+        });
+        setImageUrl(pollinationsUrl);
+        setImageSource('pollinations');
+      }
+    };
+
+    fetchImage();
+    return () => { cancelled = true; };
+  }, [imagePrompt, chapterIndex]);
 
   const handleImageLoad = () => {
     setImageLoaded(true);
   };
 
   const handleImageError = () => {
-    setImageError(true);
+    // If a Pexels/Wikipedia image failed, try Pollinations as final fallback
+    if (imageSource !== 'pollinations') {
+      const enhancedPrompt = enhanceImagePrompt(imagePrompt, chapterIndex);
+      const pollinationsUrl = buildPollinationsUrl(enhancedPrompt, {
+        width: 1200,
+        height: 600,
+        nologo: true,
+        seed: chapterIndex * 1000,
+      });
+      setImageUrl(pollinationsUrl);
+      setImageSource('pollinations');
+      setImageLoaded(false);
+    } else {
+      setImageError(true);
+    }
   };
 
   // Fallback view with gradient and prompt text
@@ -82,19 +132,28 @@ function ChapterImageHero({ imagePrompt, accentColor, chapterIndex, layout }) {
       )}
 
       {/* Actual image */}
-      <motion.img
-        src={imageUrl}
-        alt={imagePrompt}
-        onLoad={handleImageLoad}
-        onError={handleImageError}
-        initial={{ opacity: 0, scale: 1.1 }}
-        animate={{
-          opacity: imageLoaded ? 1 : 0,
-          scale: imageLoaded ? 1 : 1.1,
-        }}
-        transition={{ duration: 0.8 }}
-        className="w-full h-full object-cover"
-      />
+      {imageUrl && (
+        <motion.img
+          src={imageUrl}
+          alt={imagePrompt}
+          onLoad={handleImageLoad}
+          onError={handleImageError}
+          initial={{ opacity: 0, scale: 1.1 }}
+          animate={{
+            opacity: imageLoaded ? 1 : 0,
+            scale: imageLoaded ? 1 : 1.1,
+          }}
+          transition={{ duration: 0.8 }}
+          className="w-full h-full object-cover"
+        />
+      )}
+
+      {/* Source badge */}
+      {imageLoaded && imageSource && (
+        <div className="absolute top-3 right-3 px-2 py-1 rounded-full text-[10px] font-medium bg-black/50 text-white/70 backdrop-blur-sm">
+          {imageSource === 'pexels' ? '📷 Pexels' : imageSource === 'wikipedia' ? '📚 Wikipedia' : '🎨 AI Generated'}
+        </div>
+      )}
 
       {/* Gradient overlay for text readability */}
       {imageLoaded && (

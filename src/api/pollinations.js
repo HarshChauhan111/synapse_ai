@@ -1,8 +1,9 @@
+const POLLINATIONS_API_KEY = process.env.REACT_APP_POLLINATIONS_API_KEY || '';
 const POLLINATIONS_BASE_URL = 'https://image.pollinations.ai/prompt';
 
 /**
  * Build Pollinations AI image URL from a prompt
- * Pollinations is free and requires no API key
+ * Uses API key for authenticated requests when available
  */
 export const buildPollinationsUrl = (prompt, options = {}) => {
   const {
@@ -21,6 +22,10 @@ export const buildPollinationsUrl = (prompt, options = {}) => {
   
   if (seed !== null) {
     url += `&seed=${seed}`;
+  }
+
+  if (POLLINATIONS_API_KEY) {
+    url += `&token=${POLLINATIONS_API_KEY}`;
   }
 
   return url;

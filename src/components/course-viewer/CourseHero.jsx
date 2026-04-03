@@ -1,7 +1,19 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { BookOpen, Clock, Users, BarChart3, ChevronDown } from 'lucide-react';
-import { generateFallbackGradient } from '../../api/unsplash';
+
+/**
+ * Generate a fallback gradient based on course title
+ */
+const generateFallbackGradient = (courseTitle) => {
+  let hash = 0;
+  for (let i = 0; i < courseTitle.length; i++) {
+    hash = courseTitle.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const hue1 = Math.abs(hash % 360);
+  const hue2 = (hue1 + 40) % 360;
+  return `linear-gradient(135deg, hsl(${hue1}, 70%, 50%) 0%, hsl(${hue2}, 80%, 40%) 100%)`;
+};
 
 function CourseHero({
   courseTitle,
@@ -148,15 +160,19 @@ function CourseHero({
             className="mt-8 text-xs text-white/30"
           >
             Photo by{' '}
-            <a
-              href={thumbnailData.photographerUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline hover:text-white/50"
-            >
-              {thumbnailData.photographer}
-            </a>{' '}
-            on Unsplash
+            {thumbnailData.photographerUrl ? (
+              <a
+                href={thumbnailData.photographerUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline hover:text-white/50"
+              >
+                {thumbnailData.photographer}
+              </a>
+            ) : (
+              <span>{thumbnailData.photographer}</span>
+            )}
+            {' '}on {thumbnailData.source === 'pexels' ? 'Pexels' : 'Unsplash'}
           </motion.p>
         )}
       </div>

@@ -101,11 +101,12 @@ export function ChatbotProvider({ children }) {
     dispatch({ type: ACTIONS.CLOSE_PANEL });
   }, []);
 
-  const addMessage = useCallback((role, content) => {
+  const addMessage = useCallback((role, content, visual = null) => {
     const message = {
       id: Date.now().toString(),
       role, // 'user' or 'assistant'
       content,
+      visual, // visual data for charts, images, etc.
       timestamp: new Date().toISOString(),
     };
     dispatch({
@@ -119,8 +120,8 @@ export function ChatbotProvider({ children }) {
     return addMessage('user', content);
   }, [addMessage]);
 
-  const addAssistantMessage = useCallback((content) => {
-    return addMessage('assistant', content);
+  const addAssistantMessage = useCallback((content, visual = null) => {
+    return addMessage('assistant', content, visual);
   }, [addMessage]);
 
   const setLoading = useCallback((isLoading) => {
