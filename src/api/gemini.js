@@ -1,0 +1,379 @@
+import { GoogleGenerativeAI } from '@google/generative-ai';
+
+const API_KEY = process.env.REACT_APP_GEMINI_API_KEY
+
+// Validate API key exists
+if (!API_KEY) {
+  console.warn('REACT_APP_GEMINI_API_KEY is not set. Please add it to your .env file.');
+}
+
+const genAI = API_KEY ? new GoogleGenerativeAI(API_KEY) : null;
+
+const getModel = () => {
+  if (!genAI) {
+    throw new Error('Gemini API key is not configured. Please add REACT_APP_GEMINI_API_KEY to your .env file.');
+  }
+  return genAI.getGenerativeModel({ 
+    model: 'gemini-2.5-flash',
+    generationConfig: {
+      temperature: 0.7,
+      topP: 0.8,
+      topK: 40,
+      maxOutputTokens: 8192,
+    },
+  });
+};
+
+/**
+ * Sleep for specified milliseconds
+ */
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+/**
+ * Retry wrapper with exponential backoff for rate limit errors
+ */
+const withRetry = async (fn, maxRetries = 3, initialDelay = 2000) => {
+  let lastError;
+  
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (error) {
+      lastError = error;
+      const errorMessage = error?.message || error?.toString() || '';
+      
+      // Only retry on quota/rate limit errors
+      const isRateLimitError = errorMessage.includes('quota') || 
+                               errorMessage.includes('rate') ||
+                               errorMessage.includes('429') ||
+                               errorMessage.includes('RESOURCE_EXHAUSTED');
+      
+      if (!isRateLimitError || attempt === maxRetries) {
+        throw error;
+      }
+      
+      // Exponential backoff: 2s, 4s, 8s
+      const delay = initialDelay * Math.pow(2, attempt);
+      console.log(`Rate limited. Retrying in ${delay/1000}s... (attempt ${attempt + 1}/${maxRetries})`);
+      await sleep(delay);
+    }
+  }
+  
+  throw lastError;
+};
+
+/**
+ * Parse JSON from Gemini response, handling markdown code blocks
+ */
+const parseGeminiJSON = (text) => {
+  // Remove markdown code blocks if present
+  let cleaned = text.trim();
+  if (cleaned.startsWith('```json')) {
+    cleaned = cleaned.slice(7);
+  } else if (cleaned.startsWith('```')) {
+    cleaned = cleaned.slice(3);
+  }
+  if (cleaned.endsWith('```')) {
+    cleaned = cleaned.slice(0, -3);
+  }
+  try {
+    return JSON.parse(cleaned.trim());
+  } catch (parseError) {
+    console.error('Failed to parse JSON response:', cleaned);
+    throw new Error('Invalid response format from AI. Please try again.');
+  }
+};
+
+/**
+ * Generate course structure (chapter count suggestions)
+ */
+export const generateCourseStructure = async (title, duration) => {
+  const prompt = `You are a professional curriculum designer. Analyze the course topic and chapter duration.
+
+Course Title: "${title}"
+Duration per Chapter: "${duration}"
+
+Return ONLY a valid JSON object (no markdown, no explanation) in exactly this format:
+{
+  "suggestedChapters": [3, 5, 7, 10],
+  "recommendedChapters": 5,
+  "reasoning": "Brief one-sentence explanation of why these counts suit this topic",
+  "courseDescription": "A 2-sentence overview of what this course will cover",
+  "difficultyLevel": "Beginner",
+  "targetAudience": "Short description of ideal learner"
+}
+
+Important: difficultyLevel must be exactly one of: "Beginner", "Intermediate", or "Advanced" (not a pipe-separated string).`;
+
+  return withRetry(async () => {
+    const model = getModel();
+    
+    try {
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      const text = response.text();
+      console.log('Course structure response:', text);
+      return parseGeminiJSON(text);
+    } catch (error) {
+      console.error('Error generating course structure:', error);
+      const errorMessage = error?.message || error?.toString() || 'Unknown error';
+      
+      if (errorMessage.includes('API key') || errorMessage.includes('API_KEY')) {
+        throw new Error('Invalid API key. Please check your Gemini API key.');
+      }
+      if (errorMessage.includes('quota') || errorMessage.includes('rate') || errorMessage.includes('429')) {
+        throw new Error('API quota exceeded. Please wait a moment and try again.');
+      }
+      if (errorMessage.includes('blocked') || errorMessage.includes('safety')) {
+        throw new Error('Content was blocked by safety filters. Please try a different topic.');
+      }
+      throw new Error(`Failed to generate course structure: ${errorMessage}`);
+    }
+  });
+};
+
+/**
+ * Generate content for a specific chapter
+ */
+export const generateChapterContent = async (courseTitle, chapterNumber, totalChapters, chapterDuration) => {
+  const prompt = `You are an expert educator and content designer.
+
+Course: "${courseTitle}"
+Chapter: ${chapterNumber} of ${totalChapters}
+Duration: ${chapterDuration}
+
+Generate comprehensive chapter content and return ONLY a valid JSON object in exactly this format:
+
+{
+  "chapterTitle": "Chapter title here",
+  "chapterSubtitle": "One engaging subtitle line",
+  "heroType": "image",
+  "heroImagePrompt": "A detailed Pollinations image prompt (vivid, specific, educational). Example: futuristic digital classroom with holographic displays showing neural networks, purple and blue lighting, cyberpunk aesthetic",
+  "heroChartData": null,
+  "accentColor": "#hexcolor (a unique color that fits this chapter's mood)",
+  "sections": [
+    {
+      "heading": "Section heading",
+      "body": "Rich markdown content — use **bold**, *italics*, bullet lists, code blocks, blockquotes, etc. Make it comprehensive and educational.",
+      "hasCallout": true,
+      "calloutText": "Key insight or important note for this section"
+    }
+  ],
+  "keyTakeaways": ["Takeaway 1", "Takeaway 2", "Takeaway 3"],
+  "chapterSummary": "A 2-3 sentence summary of what was covered"
+}
+
+If heroType is "chart" instead of "image", use this format for heroChartData:
+{
+  "type": "bar" | "line" | "pie" | "radar" | "area",
+  "title": "Chart title",
+  "description": "What this chart shows",
+  "data": [ { "name": "Label", "value": 42 } ]
+}
+
+Rules:
+- heroType should be "chart" when data, statistics, or comparisons are central to the chapter topic, otherwise use "image"
+- For chapter ${chapterNumber}, ${chapterNumber % 3 === 0 ? 'prefer chart hero' : 'prefer image hero'}
+- accentColor must be unique and fitting - use colors like #6366f1 (indigo), #8b5cf6 (violet), #ec4899 (pink), #10b981 (emerald), #f59e0b (amber), #3b82f6 (blue), #ef4444 (red), #06b6d4 (cyan)
+- sections should have 4-6 sections with rich educational content appropriate for ${chapterDuration}
+- All markdown in body fields must be valid and render cleanly
+- Make content progressively build on previous chapters`;
+
+  return withRetry(async () => {
+    const model = getModel();
+    try {
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      const text = response.text();
+      return parseGeminiJSON(text);
+    } catch (error) {
+      console.error('Error generating chapter content:', error);
+      throw new Error(`Failed to generate chapter ${chapterNumber} content. Please try again.`);
+    }
+  });
+};
+
+/**
+ * Generate quiz questions based on chapter content
+ */
+export const generateQuiz = async (courseTitle, chaptersData, numChapters) => {
+  // chaptersData is already filtered to include only selected chapters
+  const chapterSummaries = chaptersData.map(c => ({
+    title: c.chapterTitle || 'Untitled Chapter',
+    summary: c.chapterSummary || 'No summary available',
+    takeaways: c.keyTakeaways || []
+  }));
+
+  if (chapterSummaries.length === 0) {
+    throw new Error('No chapter data available to generate quiz');
+  }
+
+  const questionCount = chapterSummaries.length * 3;
+
+  const prompt = `You are a quiz generator for the course "${courseTitle}".
+
+Based on the following chapter summaries, generate a quiz.
+
+Chapters: ${JSON.stringify(chapterSummaries, null, 2)}
+
+Return ONLY a valid JSON array of questions in exactly this format:
+[
+  {
+    "questionNumber": 1,
+    "question": "Question text here",
+    "type": "mcq",
+    "options": ["Option A", "Option B", "Option C", "Option D"],
+    "correctAnswer": "Option A",
+    "explanation": "Why this answer is correct"
+  }
+]
+
+Rules:
+- Generate exactly ${questionCount} questions (3 per chapter)
+- Mix MCQ and true_false types (roughly 70% MCQ, 30% true_false)
+- Questions must test genuine comprehension, not trivia
+- Difficulty should gradually increase as question number increases
+- For true_false type, options must be exactly ["True", "False"]
+- correctAnswer must exactly match one of the options
+- Make questions specific to the chapter content provided`;
+
+  return withRetry(async () => {
+    const model = getModel();
+    try {
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      const text = response.text();
+      console.log('Quiz raw response:', text);
+      const questions = parseGeminiJSON(text);
+      
+      // Validate response
+      if (!Array.isArray(questions)) {
+        throw new Error('Quiz response is not an array');
+      }
+      
+      return questions;
+    } catch (error) {
+      console.error('Error generating quiz:', error);
+      const errorMessage = error?.message || 'Unknown error';
+      if (errorMessage.includes('quota') || errorMessage.includes('rate')) {
+        throw new Error('API quota exceeded. Please wait a moment and try again.');
+      }
+      throw new Error('Failed to generate quiz. Please try again.');
+    }
+  });
+};
+
+/**
+ * Generate a batch of quiz questions (for continuous quiz mode)
+ * @param {string} courseTitle - Course title
+ * @param {Array} chaptersData - Array of chapter objects
+ * @param {number} batchSize - Number of questions to generate (default 10)
+ * @param {number} batchNumber - Which batch this is (1, 2, 3, etc.)
+ */
+export const generateQuizBatch = async (courseTitle, chaptersData, batchSize = 10, batchNumber = 1) => {
+  const chapterSummaries = chaptersData.map(c => ({
+    title: c.chapterTitle || 'Untitled Chapter',
+    summary: c.chapterSummary || 'No summary available',
+    takeaways: c.keyTakeaways || [],
+    sections: c.sections?.map(s => s.heading) || []
+  }));
+
+  if (chapterSummaries.length === 0) {
+    throw new Error('No chapter data available to generate quiz');
+  }
+
+  // Vary difficulty based on batch number
+  const difficultyLevel = batchNumber === 1 ? 'easy to medium' : 
+                          batchNumber === 2 ? 'medium' : 
+                          batchNumber === 3 ? 'medium to hard' : 'hard';
+
+  const prompt = `You are a quiz generator for the course "${courseTitle}".
+
+Generate batch #${batchNumber} of quiz questions based on these chapters:
+
+${JSON.stringify(chapterSummaries, null, 2)}
+
+Return ONLY a valid JSON array with exactly ${batchSize} questions in this format:
+[
+  {
+    "questionNumber": 1,
+    "question": "Question text here",
+    "type": "mcq",
+    "options": ["Option A", "Option B", "Option C", "Option D"],
+    "correctAnswer": "Option A",
+    "explanation": "Brief explanation why this is correct"
+  }
+]
+
+Rules:
+- Generate exactly ${batchSize} unique questions
+- This is batch #${batchNumber}, so difficulty should be: ${difficultyLevel}
+- Mix question types: ~70% mcq (4 options), ~30% true_false
+- For true_false: options must be ["True", "False"]
+- correctAnswer must exactly match one option
+- Questions must test genuine understanding, not memorization
+- Cover different aspects of the chapters - don't repeat similar questions
+- Make questions engaging and thought-provoking
+- Batch ${batchNumber > 1 ? `should have DIFFERENT questions from previous batches` : 'starts the quiz'}`;
+
+  return withRetry(async () => {
+    const model = getModel();
+    try {
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      const text = response.text();
+      console.log(`Quiz batch ${batchNumber} response:`, text.substring(0, 200) + '...');
+      const questions = parseGeminiJSON(text);
+      
+      if (!Array.isArray(questions)) {
+        throw new Error('Quiz response is not an array');
+      }
+      
+      return questions;
+    } catch (error) {
+      console.error(`Error generating quiz batch ${batchNumber}:`, error);
+      const errorMessage = error?.message || 'Unknown error';
+      if (errorMessage.includes('quota') || errorMessage.includes('rate')) {
+        throw new Error('API quota exceeded. Please wait a moment and try again.');
+      }
+      throw new Error('Failed to generate quiz questions. Please try again.');
+    }
+  });
+};
+
+/**
+ * Chat with AI tutor - context-aware responses
+ */
+export const chatWithTutor = async (courseTitle, chapterTitle, chapterContent, conversationHistory, userMessage) => {
+  const systemContext = `You are an expert AI tutor for the course "${courseTitle}", currently on chapter "${chapterTitle}".
+
+Chapter content summary: ${chapterContent}
+
+Answer student questions helpfully, concisely, and encouragingly.
+If a question is unrelated to the course, gently redirect.
+Keep responses under 150 words unless a detailed explanation is truly needed.
+Use markdown formatting for better readability when appropriate.`;
+
+  return withRetry(async () => {
+    const model = getModel();
+    const messages = [
+      { role: 'user', parts: [{ text: systemContext }] },
+      { role: 'model', parts: [{ text: 'I understand. I\'m ready to help students with this chapter.' }] },
+      ...conversationHistory.map(msg => ({
+        role: msg.role === 'user' ? 'user' : 'model',
+        parts: [{ text: msg.content }]
+      })),
+      { role: 'user', parts: [{ text: userMessage }] }
+    ];
+
+    try {
+      const chat = model.startChat({ history: messages.slice(0, -1) });
+      const result = await chat.sendMessage(userMessage);
+      const response = await result.response;
+      return response.text();
+    } catch (error) {
+      console.error('Error in chatbot:', error);
+      throw new Error('Failed to get response. Please try again.');
+    }
+  });
+};

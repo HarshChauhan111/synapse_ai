@@ -1,16 +1,28 @@
 {
-  "name": "synapse_ai",
+  "name": "courseforge-ai",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@google/generative-ai": "^0.21.0",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^13.5.0",
+    "framer-motion": "^11.18.2",
+    "lucide-react": "^0.400.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
+    "react-markdown": "^9.1.0",
+    "react-router-dom": "^6.30.3",
     "react-scripts": "5.0.1",
+    "recharts": "^2.15.4",
+    "remark-gfm": "^4.0.1",
     "web-vitals": "^2.1.4"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.0",
+    "postcss": "^8.4.0",
+    "tailwindcss": "^3.4.0"
   },
   "scripts": {
     "start": "react-scripts start",
