@@ -1,5 +1,5 @@
-import React, { useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useRef, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import CourseHero from '../components/course-viewer/CourseHero';
 import ChapterPage from '../components/course-viewer/ChapterPage';
@@ -12,14 +12,22 @@ import QuizQuestion from '../components/quiz/QuizQuestion';
 import QuizProgress from '../components/quiz/QuizProgress';
 import QuizResult from '../components/quiz/QuizResult';
 import { useCourse } from '../context/CourseContext';
+import { useAuth } from '../context/AuthContext';
 import { useChapterLoader } from '../hooks/useChapterLoader';
 import { useChatbotHook } from '../hooks/useChatbot';
 import { useQuiz } from '../hooks/useQuiz';
+import { courseAPI, quizAPI } from '../api/backend';
+import { Loader2 } from 'lucide-react';
 
 function CoursePage() {
   const navigate = useNavigate();
+  const { courseId } = useParams();
   const contentRef = useRef(null);
   const hasShownHero = useRef(false);
+  const [loadingCourse, setLoadingCourse] = useState(false);
+  const [loadError, setLoadError] = useState(null);
+
+  const { isAuthenticated } = useAuth();
 
   const {
     courseTitle,
@@ -32,27 +40,72 @@ function CoursePage() {
     currentChapterIndex,
     currentChapter,
     visitedChapters,
+    generatedChapters,
     navigateToChapter,
     courseSetupComplete,
     isGenerating,
     generationError,
+    loadSavedCourse,
+    courseId: contextCourseId,
   } = useCourse();
 
   const {
     chapterLoading,
-    loadError,
+    loadError: chapterLoadError,
     retryChapter,
   } = useChapterLoader();
 
   const chatbot = useChatbotHook();
   const quiz = useQuiz();
 
-  // Redirect if course setup not complete
+  // Load saved course if courseId provided
   useEffect(() => {
-    if (!courseSetupComplete || !courseTitle) {
+    if (courseId && isAuthenticated && !courseSetupComplete) {
+      const loadCourse = async () => {
+        setLoadingCourse(true);
+        setLoadError(null);
+        try {
+          const response = await courseAPI.get(courseId);
+          loadSavedCourse(response.course);
+        } catch (err) {
+          console.error('Failed to load course:', err);
+          setLoadError(err.message);
+        } finally {
+          setLoadingCourse(false);
+        }
+      };
+      loadCourse();
+    }
+  }, [courseId, isAuthenticated, courseSetupComplete, loadSavedCourse]);
+
+  // Save progress when chapter changes
+  useEffect(() => {
+    if (isAuthenticated && contextCourseId && courseSetupComplete) {
+      const saveProgress = async () => {
+        try {
+          await courseAPI.updateProgress(contextCourseId, {
+            currentChapterIndex,
+            visitedChapters,
+            completed: visitedChapters.length >= selectedChapterCount,
+            chaptersData: generatedChapters,
+          });
+        } catch (err) {
+          console.error('Failed to save progress:', err);
+        }
+      };
+      
+      // Debounce save
+      const timeoutId = setTimeout(saveProgress, 1000);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [currentChapterIndex, visitedChapters, generatedChapters, isAuthenticated, contextCourseId, courseSetupComplete, selectedChapterCount]);
+
+  // Redirect if course setup not complete and not loading
+  useEffect(() => {
+    if (!loadingCourse && !courseSetupComplete && !courseId) {
       navigate('/setup');
     }
-  }, [courseSetupComplete, courseTitle, navigate]);
+  }, [courseSetupComplete, loadingCourse, courseId, navigate]);
 
   // Scroll to content when navigating chapters
   useEffect(() => {
@@ -71,6 +124,63 @@ function CoursePage() {
   const handleNavigateToChapter = (index) => {
     navigateToChapter(index);
   };
+
+  // Handle quiz result saving
+  const handleQuizFinish = async () => {
+    quiz.finishQuiz();
+    
+    // Save quiz result to backend
+    if (isAuthenticated && contextCourseId) {
+      const score = quiz.calculateScore();
+      const detailedResults = quiz.getDetailedResults();
+      try {
+        await quizAPI.saveResult({
+          courseId: contextCourseId,
+          chaptersQuizzed: quiz.selectedChapters || [],
+          score: score.correct,
+          totalQuestions: score.total,
+          answersData: detailedResults,
+        });
+      } catch (err) {
+        console.error('Failed to save quiz result:', err);
+      }
+    }
+  };
+
+  // Loading state for saved course
+  if (loadingCourse) {
+    return (
+      <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-10 h-10 animate-spin text-[#1DA1F2] mx-auto mb-4" />
+          <p className="text-neutral-600">Loading your course...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (loadError) {
+    return (
+      <div className="min-h-screen bg-neutral-50 flex items-center justify-center px-4">
+        <div className="text-center max-w-md">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
+            <span className="text-2xl">😕</span>
+          </div>
+          <h2 className="text-xl font-semibold text-neutral-900 mb-2">
+            Failed to load course
+          </h2>
+          <p className="text-neutral-600 mb-6">{loadError}</p>
+          <button
+            onClick={() => navigate('/my-courses')}
+            className="px-6 py-3 bg-[#1DA1F2] text-white font-medium rounded-xl hover:bg-[#1a8cd8] transition-colors"
+          >
+            Go to My Courses
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (!courseSetupComplete) {
     return null;
@@ -102,7 +212,7 @@ function CoursePage() {
           chapterIndex={currentChapterIndex}
           totalChapters={selectedChapterCount}
           isLoading={chapterLoading || isGenerating}
-          error={loadError || generationError}
+          error={chapterLoadError || generationError}
           onRetry={retryChapter}
         />
 
@@ -164,7 +274,7 @@ function CoursePage() {
               <div className="absolute top-6 right-6 flex items-center gap-3">
                 {!quiz.showResult && quiz.answeredCount > 0 && (
                   <button
-                    onClick={quiz.finishQuiz}
+                    onClick={handleQuizFinish}
                     className="px-4 py-2 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 transition-colors text-sm font-medium"
                   >
                     Finish Quiz ({quiz.answeredCount} answered)
@@ -174,7 +284,7 @@ function CoursePage() {
                   onClick={() => {
                     // If user has answered questions, show results first
                     if (quiz.answeredCount > 0 && !quiz.showResult) {
-                      quiz.finishQuiz();
+                      handleQuizFinish();
                     } else {
                       quiz.exitQuiz();
                     }

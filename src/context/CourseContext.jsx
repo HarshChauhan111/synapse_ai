@@ -2,6 +2,7 @@ import React, { createContext, useContext, useReducer, useCallback } from 'react
 
 // Initial state
 const initialState = {
+  courseId: null, // Backend course ID
   courseTitle: '',
   chapterDuration: '',
   selectedChapterCount: 0,
@@ -34,6 +35,8 @@ const ACTIONS = {
   MARK_CHAPTER_VISITED: 'MARK_CHAPTER_VISITED',
   COMPLETE_SETUP: 'COMPLETE_SETUP',
   RESET_COURSE: 'RESET_COURSE',
+  SET_COURSE_ID: 'SET_COURSE_ID',
+  LOAD_SAVED_COURSE: 'LOAD_SAVED_COURSE',
 };
 
 // Reducer
@@ -119,6 +122,34 @@ function courseReducer(state, action) {
     case ACTIONS.RESET_COURSE:
       return initialState;
 
+    case ACTIONS.SET_COURSE_ID:
+      return {
+        ...state,
+        courseId: action.payload,
+      };
+
+    case ACTIONS.LOAD_SAVED_COURSE:
+      return {
+        ...state,
+        courseId: action.payload.id,
+        courseTitle: action.payload.title,
+        chapterDuration: action.payload.chapterDuration,
+        selectedChapterCount: action.payload.selectedChapterCount,
+        courseDescription: action.payload.description,
+        difficultyLevel: action.payload.difficultyLevel,
+        targetAudience: action.payload.targetAudience,
+        thumbnailUrl: action.payload.thumbnailUrl,
+        thumbnailData: action.payload.thumbnailUrl ? {
+          url: action.payload.thumbnailUrl,
+          photographer: action.payload.thumbnailPhotographer,
+          source: action.payload.thumbnailSource,
+        } : null,
+        generatedChapters: action.payload.chaptersData || {},
+        currentChapterIndex: action.payload.progress?.currentChapterIndex || 0,
+        visitedChapters: action.payload.progress?.visitedChapters || [0],
+        courseSetupComplete: true,
+      };
+
     default:
       return state;
   }
@@ -203,6 +234,20 @@ export function CourseProvider({ children }) {
     dispatch({ type: ACTIONS.RESET_COURSE });
   }, []);
 
+  const setCourseId = useCallback((id) => {
+    dispatch({
+      type: ACTIONS.SET_COURSE_ID,
+      payload: id,
+    });
+  }, []);
+
+  const loadSavedCourse = useCallback((courseData) => {
+    dispatch({
+      type: ACTIONS.LOAD_SAVED_COURSE,
+      payload: courseData,
+    });
+  }, []);
+
   // Computed values
   const currentChapter = state.generatedChapters[state.currentChapterIndex];
   const isCurrentChapterGenerated = !!currentChapter;
@@ -239,6 +284,8 @@ export function CourseProvider({ children }) {
     completeSetup,
     resetCourse,
     getChaptersArray,
+    setCourseId,
+    loadSavedCourse,
   };
 
   return (

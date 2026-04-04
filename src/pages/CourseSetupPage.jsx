@@ -8,14 +8,21 @@ import LoadingSpinner from '../components/common/LoadingSpinner';
 import { StepProgress } from '../components/common/ProgressBar';
 import { useCourse } from '../context/CourseContext';
 import { useCourseGenerator } from '../hooks/useCourseGenerator';
+import { useAuth } from '../context/AuthContext';
+import { courseAPI } from '../api/backend';
 
 const STEPS = ['Topic', 'Structure', 'Chapters'];
 
 function CourseSetupPage() {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
+  const [savingCourse, setSavingCourse] = useState(false);
+  
+  const { isAuthenticated } = useAuth();
   
   const {
+    courseTitle,
+    chapterDuration,
     suggestedChapters,
     recommendedChapters,
     selectedChapterCount,
@@ -24,6 +31,8 @@ function CourseSetupPage() {
     difficultyLevel,
     targetAudience,
     reasoning,
+    thumbnailData,
+    setCourseId,
   } = useCourse();
 
   const {
@@ -59,9 +68,37 @@ function CourseSetupPage() {
   };
 
   // Step 3: Handle final confirmation
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     startCourse();
-    navigate('/course');
+    
+    // Save course to backend if authenticated
+    if (isAuthenticated) {
+      setSavingCourse(true);
+      try {
+        const response = await courseAPI.create({
+          title: courseTitle,
+          description: courseDescription,
+          chapterDuration,
+          difficultyLevel,
+          targetAudience,
+          thumbnailUrl: thumbnailData?.url,
+          thumbnailPhotographer: thumbnailData?.photographer,
+          thumbnailSource: thumbnailData?.source,
+          selectedChapterCount,
+          chaptersData: {},
+        });
+        setCourseId(response.course.id);
+        navigate(`/course/${response.course.id}`);
+      } catch (error) {
+        console.error('Failed to save course:', error);
+        // Still navigate even if save fails
+        navigate('/course');
+      } finally {
+        setSavingCourse(false);
+      }
+    } else {
+      navigate('/course');
+    }
   };
 
   const pageVariants = {
@@ -153,7 +190,7 @@ function CourseSetupPage() {
                 selectedCount={selectedChapterCount}
                 onSelect={handleChapterSelect}
                 onConfirm={handleConfirm}
-                isLoading={false}
+                isLoading={savingCourse}
               />
             </motion.div>
           )}
