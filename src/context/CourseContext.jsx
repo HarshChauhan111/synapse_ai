@@ -20,6 +20,13 @@ const initialState = {
   isGenerating: false,
   generationError: null,
   courseSetupComplete: false,
+  // Source info for PDF courses
+  sourceType: 'topic', // 'topic' or 'pdf'
+  sourcePdfNames: [],
+  isPublic: false,
+  viewCount: 0,
+  category: null,
+  tags: [],
 };
 
 // Action types
@@ -37,6 +44,8 @@ const ACTIONS = {
   RESET_COURSE: 'RESET_COURSE',
   SET_COURSE_ID: 'SET_COURSE_ID',
   LOAD_SAVED_COURSE: 'LOAD_SAVED_COURSE',
+  SET_SOURCE_INFO: 'SET_SOURCE_INFO',
+  SET_PUBLIC_STATUS: 'SET_PUBLIC_STATUS',
 };
 
 // Reducer
@@ -148,6 +157,27 @@ function courseReducer(state, action) {
         currentChapterIndex: action.payload.progress?.currentChapterIndex || 0,
         visitedChapters: action.payload.progress?.visitedChapters || [0],
         courseSetupComplete: true,
+        sourceType: action.payload.sourceType || 'topic',
+        sourcePdfNames: action.payload.sourcePdfNames || [],
+        isPublic: action.payload.isPublic || false,
+        viewCount: action.payload.viewCount || 0,
+        category: action.payload.category || null,
+        tags: action.payload.tags || [],
+      };
+
+    case ACTIONS.SET_SOURCE_INFO:
+      return {
+        ...state,
+        sourceType: action.payload.sourceType,
+        sourcePdfNames: action.payload.sourcePdfNames || [],
+      };
+
+    case ACTIONS.SET_PUBLIC_STATUS:
+      return {
+        ...state,
+        isPublic: action.payload.isPublic,
+        category: action.payload.category || state.category,
+        tags: action.payload.tags || state.tags,
       };
 
     default:
@@ -248,6 +278,20 @@ export function CourseProvider({ children }) {
     });
   }, []);
 
+  const setSourceInfo = useCallback((sourceType, sourcePdfNames = []) => {
+    dispatch({
+      type: ACTIONS.SET_SOURCE_INFO,
+      payload: { sourceType, sourcePdfNames },
+    });
+  }, []);
+
+  const setPublicStatus = useCallback((isPublic, category = null, tags = []) => {
+    dispatch({
+      type: ACTIONS.SET_PUBLIC_STATUS,
+      payload: { isPublic, category, tags },
+    });
+  }, []);
+
   // Computed values
   const currentChapter = state.generatedChapters[state.currentChapterIndex];
   const isCurrentChapterGenerated = !!currentChapter;
@@ -286,6 +330,8 @@ export function CourseProvider({ children }) {
     getChaptersArray,
     setCourseId,
     loadSavedCourse,
+    setSourceInfo,
+    setPublicStatus,
   };
 
   return (

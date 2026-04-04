@@ -6,6 +6,8 @@ const cors = require('cors');
 const authRoutes = require('./routes/auth');
 const courseRoutes = require('./routes/courses');
 const quizRoutes = require('./routes/quiz');
+const marketplaceRoutes = require('./routes/marketplace');
+const pdfRoutes = require('./routes/pdf');
 
 const app = express();
 
@@ -25,6 +27,8 @@ app.get('/api/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/courses', courseRoutes);
 app.use('/api/quiz', quizRoutes);
+app.use('/api/marketplace', marketplaceRoutes);
+app.use('/api/pdf', pdfRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

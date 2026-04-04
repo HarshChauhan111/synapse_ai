@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { generateCourseStructure } from '../api/gemini';
+import { generateCourseStructure, generateCourseStructureFromPdf } from '../api/gemini';
 import { getPexelsImage } from '../api/pexelsApi';
 import { useCourse } from '../context/CourseContext';
 
@@ -16,6 +16,7 @@ export function useCourseGenerator() {
     completeSetup,
     courseTitle,
     chapterDuration,
+    setSourceInfo,
   } = useCourse();
 
   const [structureLoading, setStructureLoading] = useState(false);
@@ -49,13 +50,27 @@ export function useCourseGenerator() {
   /**
    * Step 1: Generate course structure from title and duration
    */
-  const generateStructure = useCallback(async (title, duration) => {
+  const generateStructure = useCallback(async (title, duration, options = {}) => {
     setStructureLoading(true);
     setStructureError(null);
     setCourseMeta(title, duration);
 
+    // Store source info if provided
+    if (options.sourceType) {
+      setSourceInfo?.(options.sourceType, options.sourcePdfNames || []);
+    }
+
     try {
-      const structure = await generateCourseStructure(title, duration);
+      let structure;
+      
+      if (options.sourceType === 'pdf' && options.sourceText) {
+        // Generate from PDF content
+        structure = await generateCourseStructureFromPdf(title, duration, options.sourceText);
+      } else {
+        // Generate from topic
+        structure = await generateCourseStructure(title, duration);
+      }
+      
       setCourseStructure({
         courseDescription: structure.courseDescription,
         difficultyLevel: structure.difficultyLevel,
@@ -77,7 +92,7 @@ export function useCourseGenerator() {
     } finally {
       setStructureLoading(false);
     }
-  }, [setCourseMeta, setCourseStructure, setError, fetchThumbnailAsync]);
+  }, [setCourseMeta, setCourseStructure, setError, fetchThumbnailAsync, setSourceInfo]);
 
   /**
    * Retry structure generation

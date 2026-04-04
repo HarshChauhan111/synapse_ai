@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, BookOpen, Home, User, LogOut, FolderOpen, ChevronDown } from 'lucide-react';
+import { Sparkles, BookOpen, Home, User, LogOut, FolderOpen, ChevronDown, Store } from 'lucide-react';
 import { useCourse } from '../../context/CourseContext';
 import { useAuth } from '../../context/AuthContext';
 
@@ -119,6 +119,19 @@ function Navbar() {
                 <span className="hidden sm:inline">Home</span>
               </Link>
             )}
+
+            {/* Marketplace link */}
+            <Link
+              to="/marketplace"
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors text-sm ${
+                location.pathname === '/marketplace' 
+                  ? (isHomePage ? 'bg-white/20 text-white' : 'bg-blue-50 text-blue-600')
+                  : buttonStyle
+              }`}
+            >
+              <Store className="w-4 h-4" />
+              <span className="hidden sm:inline">Marketplace</span>
+            </Link>
 
             {/* Auth section */}
             {isAuthenticated ? (

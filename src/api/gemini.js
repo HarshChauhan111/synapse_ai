@@ -152,6 +152,69 @@ Important: difficultyLevel must be exactly one of: "Beginner", "Intermediate", o
 };
 
 /**
+ * Generate course structure from PDF content
+ */
+export const generateCourseStructureFromPdf = async (title, duration, pdfContent) => {
+  // Truncate PDF content if too long (keep first 30000 chars for context)
+  const truncatedContent = pdfContent.length > 30000 
+    ? pdfContent.substring(0, 30000) + '\n\n[Content truncated...]' 
+    : pdfContent;
+  
+  const prompt = `You are a professional curriculum designer. Analyze the following PDF document content and create a structured course.
+
+Course Title: "${title}"
+Duration per Chapter: "${duration}"
+
+PDF DOCUMENT CONTENT:
+---
+${truncatedContent}
+---
+
+Based on the PDF content above, create a course structure. Extract the main topics, concepts, and organize them into a logical learning progression.
+
+Return ONLY a valid JSON object (no markdown, no explanation) in exactly this format:
+{
+  "suggestedChapters": [3, 5, 7, 10],
+  "recommendedChapters": 5,
+  "reasoning": "Brief explanation of how you organized the PDF content into chapters",
+  "courseDescription": "A 2-sentence overview based on the PDF content",
+  "difficultyLevel": "Beginner",
+  "targetAudience": "Short description of ideal learner based on the document complexity"
+}
+
+Important: 
+- difficultyLevel must be exactly one of: "Beginner", "Intermediate", or "Advanced"
+- Base everything on the actual PDF content provided
+- Organize topics in a logical learning order`;
+
+  return withRetry(async () => {
+    const model = getModel();
+    
+    try {
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      const text = response.text();
+      console.log('PDF course structure response:', text);
+      return parseGeminiJSON(text);
+    } catch (error) {
+      console.error('Error generating course structure from PDF:', error);
+      const errorMessage = error?.message || error?.toString() || 'Unknown error';
+      
+      if (errorMessage.includes('API key') || errorMessage.includes('API_KEY')) {
+        throw new Error('Invalid API key. Please check your Gemini API key.');
+      }
+      if (errorMessage.includes('quota') || errorMessage.includes('rate') || errorMessage.includes('429')) {
+        throw new Error('API quota exceeded. Please wait a moment and try again.');
+      }
+      if (errorMessage.includes('blocked') || errorMessage.includes('safety')) {
+        throw new Error('Content was blocked by safety filters. The PDF may contain restricted content.');
+      }
+      throw new Error(`Failed to generate course structure from PDF: ${errorMessage}`);
+    }
+  });
+};
+
+/**
  * Generate content for a specific chapter
  */
 export const generateChapterContent = async (courseTitle, chapterNumber, totalChapters, chapterDuration) => {

@@ -193,8 +193,172 @@ export const quizAPI = {
   },
 };
 
+// ============================================
+// MARKETPLACE API
+// ============================================
+
+export const marketplaceAPI = {
+  /**
+   * Get public courses
+   */
+  getCourses: async (options = {}) => {
+    const params = new URLSearchParams();
+    if (options.page) params.append('page', options.page);
+    if (options.limit) params.append('limit', options.limit);
+    if (options.sort) params.append('sort', options.sort);
+    if (options.category) params.append('category', options.category);
+    if (options.difficulty) params.append('difficulty', options.difficulty);
+    
+    const query = params.toString();
+    return authFetch(`/marketplace${query ? `?${query}` : ''}`);
+  },
+
+  /**
+   * Search courses
+   */
+  search: async (query, options = {}) => {
+    const params = new URLSearchParams({ q: query });
+    if (options.page) params.append('page', options.page);
+    if (options.limit) params.append('limit', options.limit);
+    
+    return authFetch(`/marketplace/search?${params.toString()}`);
+  },
+
+  /**
+   * Get trending courses
+   */
+  getTrending: async (limit = 6) => {
+    return authFetch(`/marketplace/trending?limit=${limit}`);
+  },
+
+  /**
+   * Get categories
+   */
+  getCategories: async () => {
+    return authFetch('/marketplace/categories');
+  },
+
+  /**
+   * Get single public course
+   */
+  getCourse: async (courseId) => {
+    return authFetch(`/marketplace/course/${courseId}`);
+  },
+
+  /**
+   * Record view for a course
+   */
+  recordView: async (courseId) => {
+    return authFetch(`/marketplace/course/${courseId}/view`, {
+      method: 'POST',
+    });
+  },
+
+  /**
+   * Save/bookmark a course
+   */
+  saveCourse: async (courseId) => {
+    return authFetch(`/marketplace/course/${courseId}/save`, {
+      method: 'POST',
+    });
+  },
+
+  /**
+   * Unsave a course
+   */
+  unsaveCourse: async (courseId) => {
+    return authFetch(`/marketplace/course/${courseId}/save`, {
+      method: 'DELETE',
+    });
+  },
+
+  /**
+   * Get saved courses
+   */
+  getSavedCourses: async () => {
+    return authFetch('/marketplace/saved');
+  },
+
+  /**
+   * Get user's public courses
+   */
+  getMyPublicCourses: async () => {
+    return authFetch('/marketplace/my-courses');
+  },
+
+  /**
+   * Publish course to marketplace
+   */
+  publishCourse: async (courseId, { category, tags } = {}) => {
+    return authFetch(`/marketplace/course/${courseId}/publish`, {
+      method: 'POST',
+      body: JSON.stringify({ category, tags }),
+    });
+  },
+
+  /**
+   * Unpublish course from marketplace
+   */
+  unpublishCourse: async (courseId) => {
+    return authFetch(`/marketplace/course/${courseId}/unpublish`, {
+      method: 'POST',
+    });
+  },
+
+  /**
+   * Get course analytics
+   */
+  getCourseAnalytics: async (courseId) => {
+    return authFetch(`/marketplace/course/${courseId}/analytics`);
+  },
+};
+
+// ============================================
+// PDF API
+// ============================================
+
+export const pdfAPI = {
+  /**
+   * Upload PDF with extracted text
+   */
+  upload: async (fileName, extractedText, pageCount) => {
+    return authFetch('/pdf/upload', {
+      method: 'POST',
+      body: JSON.stringify({ fileName, extractedText, pageCount }),
+    });
+  },
+
+  /**
+   * Get user's uploaded PDFs
+   */
+  getUploads: async () => {
+    return authFetch('/pdf/uploads');
+  },
+
+  /**
+   * Delete uploaded PDF
+   */
+  deleteUpload: async (pdfId) => {
+    return authFetch(`/pdf/uploads/${pdfId}`, {
+      method: 'DELETE',
+    });
+  },
+
+  /**
+   * Get combined PDF content for course generation
+   */
+  generateFromPdfs: async (pdfIds, courseSettings = {}) => {
+    return authFetch('/pdf/generate-structure', {
+      method: 'POST',
+      body: JSON.stringify({ pdfIds, courseSettings }),
+    });
+  },
+};
+
 export default {
   auth: authAPI,
   courses: courseAPI,
   quiz: quizAPI,
+  marketplace: marketplaceAPI,
+  pdf: pdfAPI,
 };

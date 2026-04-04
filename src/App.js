@@ -10,6 +10,8 @@ import CourseSetupPage from './pages/CourseSetupPage';
 import CoursePage from './pages/CoursePage';
 import AuthPage from './pages/AuthPage';
 import MyCoursesPage from './pages/MyCoursesPage';
+import MarketplacePage from './pages/MarketplacePage';
+import MarketplaceCourseView from './pages/MarketplaceCourseView';
 import './index.css';
 
 // Protected route component
@@ -41,6 +43,8 @@ function AnimatedRoutes() {
       <Routes location={location} key={location.pathname}>
         <Route path="/" element={<HomePage />} />
         <Route path="/auth" element={<AuthPage />} />
+        <Route path="/marketplace" element={<MarketplacePage />} />
+        <Route path="/marketplace/course/:courseId" element={<MarketplaceCourseView />} />
         <Route 
           path="/my-courses" 
           element={

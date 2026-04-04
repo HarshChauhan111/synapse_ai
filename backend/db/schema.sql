@@ -10,6 +10,8 @@ CREATE TABLE IF NOT EXISTS users (
   email VARCHAR(255) UNIQUE NOT NULL,
   password_hash VARCHAR(255) NOT NULL,
   name VARCHAR(255) NOT NULL,
+  username VARCHAR(100) UNIQUE,
+  bio TEXT,
   avatar_url TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
@@ -17,6 +19,7 @@ CREATE TABLE IF NOT EXISTS users (
 
 -- Create index on email for faster lookups
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
 
 -- Courses table
 CREATE TABLE IF NOT EXISTS courses (
@@ -32,6 +35,14 @@ CREATE TABLE IF NOT EXISTS courses (
   thumbnail_source VARCHAR(50),
   selected_chapter_count INTEGER NOT NULL,
   chapters_data JSONB DEFAULT '{}',
+  -- Marketplace fields
+  is_public BOOLEAN DEFAULT FALSE,
+  view_count INTEGER DEFAULT 0,
+  tags TEXT[] DEFAULT ARRAY[]::TEXT[],
+  category VARCHAR(100),
+  -- PDF source fields
+  source_type VARCHAR(20) DEFAULT 'topic', -- 'topic' or 'pdf'
+  source_pdf_names TEXT[],
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
@@ -106,6 +117,10 @@ SELECT
   c.difficulty_level,
   c.selected_chapter_count,
   c.thumbnail_url,
+  c.is_public,
+  c.view_count,
+  c.tags,
+  c.category,
   c.created_at,
   c.updated_at,
   cp.current_chapter_index,
@@ -120,3 +135,119 @@ SELECT
   END as progress_percentage
 FROM courses c
 LEFT JOIN course_progress cp ON c.id = cp.course_id;
+
+-- =============================================
+-- MARKETPLACE TABLES
+-- =============================================
+
+-- Course views tracking (for unique views)
+CREATE TABLE IF NOT EXISTS course_views (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  course_id UUID NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
+  viewer_id UUID REFERENCES users(id) ON DELETE SET NULL,
+  viewer_ip VARCHAR(45), -- For anonymous tracking
+  viewed_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Indexes for course views
+CREATE INDEX IF NOT EXISTS idx_course_views_course_id ON course_views(course_id);
+CREATE INDEX IF NOT EXISTS idx_course_views_viewer_id ON course_views(viewer_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_course_views_unique_user ON course_views(course_id, viewer_id) WHERE viewer_id IS NOT NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS idx_course_views_unique_ip ON course_views(course_id, viewer_ip) WHERE viewer_ip IS NOT NULL AND viewer_id IS NULL;
+
+-- Index for marketplace queries (public courses)
+CREATE INDEX IF NOT EXISTS idx_courses_public ON courses(is_public) WHERE is_public = TRUE;
+CREATE INDEX IF NOT EXISTS idx_courses_view_count ON courses(view_count DESC);
+CREATE INDEX IF NOT EXISTS idx_courses_category ON courses(category);
+
+-- PDF uploads table
+CREATE TABLE IF NOT EXISTS pdf_uploads (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  course_id UUID REFERENCES courses(id) ON DELETE SET NULL,
+  file_name VARCHAR(500) NOT NULL,
+  file_size INTEGER,
+  page_count INTEGER,
+  extracted_text TEXT,
+  upload_status VARCHAR(20) DEFAULT 'pending', -- 'pending', 'processing', 'completed', 'failed'
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_pdf_uploads_user_id ON pdf_uploads(user_id);
+CREATE INDEX IF NOT EXISTS idx_pdf_uploads_course_id ON pdf_uploads(course_id);
+
+-- Course likes/saves (optional - for future)
+CREATE TABLE IF NOT EXISTS course_saves (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  course_id UUID NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  saved_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(course_id, user_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_course_saves_user ON course_saves(user_id);
+CREATE INDEX IF NOT EXISTS idx_course_saves_course ON course_saves(course_id);
+
+-- View for marketplace courses (public courses with creator info)
+CREATE OR REPLACE VIEW marketplace_courses AS
+SELECT 
+  c.id,
+  c.user_id,
+  c.title,
+  c.description,
+  c.chapter_duration,
+  c.difficulty_level,
+  c.target_audience,
+  c.thumbnail_url,
+  c.selected_chapter_count,
+  c.view_count,
+  c.tags,
+  c.category,
+  c.created_at,
+  u.name as creator_name,
+  u.username as creator_username,
+  u.avatar_url as creator_avatar,
+  (SELECT COUNT(*) FROM course_saves cs WHERE cs.course_id = c.id) as save_count
+FROM courses c
+JOIN users u ON c.user_id = u.id
+WHERE c.is_public = TRUE;
+
+-- Function to increment view count
+CREATE OR REPLACE FUNCTION increment_course_view(
+  p_course_id UUID,
+  p_viewer_id UUID DEFAULT NULL,
+  p_viewer_ip VARCHAR DEFAULT NULL
+) RETURNS BOOLEAN AS $$
+DECLARE
+  already_viewed BOOLEAN;
+BEGIN
+  -- Check if already viewed by this user/IP
+  IF p_viewer_id IS NOT NULL THEN
+    SELECT EXISTS(
+      SELECT 1 FROM course_views 
+      WHERE course_id = p_course_id AND viewer_id = p_viewer_id
+    ) INTO already_viewed;
+  ELSIF p_viewer_ip IS NOT NULL THEN
+    SELECT EXISTS(
+      SELECT 1 FROM course_views 
+      WHERE course_id = p_course_id AND viewer_ip = p_viewer_ip AND viewer_id IS NULL
+    ) INTO already_viewed;
+  ELSE
+    already_viewed := FALSE;
+  END IF;
+
+  IF NOT already_viewed THEN
+    -- Insert view record
+    INSERT INTO course_views (course_id, viewer_id, viewer_ip)
+    VALUES (p_course_id, p_viewer_id, p_viewer_ip)
+    ON CONFLICT DO NOTHING;
+    
+    -- Increment view count
+    UPDATE courses SET view_count = view_count + 1 WHERE id = p_course_id;
+    
+    RETURN TRUE;
+  END IF;
+  
+  RETURN FALSE;
+END;
+$$ LANGUAGE plpgsql;
