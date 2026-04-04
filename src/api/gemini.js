@@ -32,7 +32,7 @@ const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 /**
  * Retry wrapper with exponential backoff for rate limit errors
  */
-const withRetry = async (fn, maxRetries = 3, initialDelay = 2000) => {
+const withRetry = async (fn, maxRetries = 4, initialDelay = 3000) => {
   let lastError;
   
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
@@ -42,19 +42,24 @@ const withRetry = async (fn, maxRetries = 3, initialDelay = 2000) => {
       lastError = error;
       const errorMessage = error?.message || error?.toString() || '';
       
-      // Only retry on quota/rate limit errors
-      const isRateLimitError = errorMessage.includes('quota') || 
+      // Retry on quota/rate limit errors OR generic API errors
+      const isRetryableError = errorMessage.includes('quota') || 
                                errorMessage.includes('rate') ||
                                errorMessage.includes('429') ||
-                               errorMessage.includes('RESOURCE_EXHAUSTED');
+                               errorMessage.includes('500') ||
+                               errorMessage.includes('503') ||
+                               errorMessage.includes('RESOURCE_EXHAUSTED') ||
+                               errorMessage.includes('UNAVAILABLE') ||
+                               errorMessage.includes('INTERNAL') ||
+                               errorMessage.includes('Invalid response format');
       
-      if (!isRateLimitError || attempt === maxRetries) {
+      if (!isRetryableError || attempt === maxRetries) {
         throw error;
       }
       
-      // Exponential backoff: 2s, 4s, 8s
+      // Exponential backoff: 3s, 6s, 12s, 24s
       const delay = initialDelay * Math.pow(2, attempt);
-      console.log(`Rate limited. Retrying in ${delay/1000}s... (attempt ${attempt + 1}/${maxRetries})`);
+      console.log(`API error. Retrying in ${delay/1000}s... (attempt ${attempt + 1}/${maxRetries})`);
       await sleep(delay);
     }
   }
@@ -68,7 +73,11 @@ const withRetry = async (fn, maxRetries = 3, initialDelay = 2000) => {
 const parseGeminiJSON = (text) => {
   // Remove markdown code blocks if present
   let cleaned = text.trim();
+  
+  // Handle various markdown code block formats
   if (cleaned.startsWith('```json')) {
+    cleaned = cleaned.slice(7);
+  } else if (cleaned.startsWith('```JSON')) {
     cleaned = cleaned.slice(7);
   } else if (cleaned.startsWith('```')) {
     cleaned = cleaned.slice(3);
@@ -76,10 +85,20 @@ const parseGeminiJSON = (text) => {
   if (cleaned.endsWith('```')) {
     cleaned = cleaned.slice(0, -3);
   }
+  
+  // Remove any leading/trailing whitespace
+  cleaned = cleaned.trim();
+  
+  // Try to extract JSON if there's extra text before/after
+  const jsonMatch = cleaned.match(/(\{[\s\S]*\}|\[[\s\S]*\])/);
+  if (jsonMatch) {
+    cleaned = jsonMatch[1];
+  }
+  
   try {
-    return JSON.parse(cleaned.trim());
+    return JSON.parse(cleaned);
   } catch (parseError) {
-    console.error('Failed to parse JSON response:', cleaned);
+    console.error('Failed to parse JSON response:', cleaned.substring(0, 500));
     throw new Error('Invalid response format from AI. Please try again.');
   }
 };
@@ -156,11 +175,58 @@ Generate comprehensive chapter content and return ONLY a valid JSON object in ex
       "heading": "Section heading",
       "body": "Rich markdown content — use **bold**, *italics*, bullet lists, code blocks, blockquotes, etc. Make it comprehensive and educational.",
       "hasCallout": true,
-      "calloutText": "Key insight or important note for this section"
+      "calloutText": "Key insight or important note for this section",
+      "visual": null
     }
   ],
   "keyTakeaways": ["Takeaway 1", "Takeaway 2", "Takeaway 3"],
   "chapterSummary": "A 2-3 sentence summary of what was covered"
+}
+
+SECTION VISUAL FIELD - Only include when the content GENUINELY BENEFITS from it:
+
+For charts (use when discussing data, statistics, comparisons, percentages):
+{
+  "type": "chart",
+  "chartType": "bar" | "line" | "pie" | "area" | "radar",
+  "title": "Chart title",
+  "data": [{ "name": "Label", "value": 42 }, ...]
+}
+
+For timeline (use when discussing history, evolution, chronological events):
+{
+  "type": "timeline",
+  "title": "Timeline title",
+  "events": [{ "year": "2020", "title": "Event", "description": "Brief description" }, ...]
+}
+
+For process flow (use when explaining step-by-step procedures, workflows, cycles):
+{
+  "type": "process",
+  "title": "Process title",
+  "steps": [{ "title": "Step 1", "description": "What happens" }, ...]
+}
+
+For comparison table (use when comparing features, options, pros/cons):
+{
+  "type": "table",
+  "title": "Comparison title",
+  "columns": ["Feature", "Option A", "Option B"],
+  "rows": [["Speed", "Fast", "Slow"], ["Cost", "$10", "$20"]]
+}
+
+For infographic stats (use when highlighting key numbers, metrics, facts):
+{
+  "type": "infographic",
+  "title": "Key Stats",
+  "stats": [{ "label": "Users", "value": "10M", "icon": "users" }, ...]
+}
+
+For image (use when a real-world photo would help understanding):
+{
+  "type": "image",
+  "searchQuery": "specific search term for photo",
+  "caption": "What this image shows"
 }
 
 If heroType is "chart" instead of "image", use this format for heroChartData:
@@ -171,12 +237,14 @@ If heroType is "chart" instead of "image", use this format for heroChartData:
   "data": [ { "name": "Label", "value": 42 } ]
 }
 
-Rules:
-- heroType should be "chart" when data, statistics, or comparisons are central to the chapter topic, otherwise use "image"
-- For chapter ${chapterNumber}, ${chapterNumber % 3 === 0 ? 'prefer chart hero' : 'prefer image hero'}
-- accentColor must be unique and fitting - use colors like #6366f1 (indigo), #8b5cf6 (violet), #ec4899 (pink), #10b981 (emerald), #f59e0b (amber), #3b82f6 (blue), #ef4444 (red), #06b6d4 (cyan)
+CRITICAL RULES:
+- Most sections should have "visual": null - only add visuals when they genuinely enhance understanding
+- Typically 1-2 sections per chapter should have visuals, NOT every section
+- Choose the right visual type based on content (don't force charts on non-data content)
+- heroType should be "chart" when data/statistics are central, otherwise use "image"
+- accentColor must be unique - use colors like #6366f1 (indigo), #8b5cf6 (violet), #ec4899 (pink), #10b981 (emerald), #f59e0b (amber), #3b82f6 (blue), #ef4444 (red), #06b6d4 (cyan)
 - sections should have 4-6 sections with rich educational content appropriate for ${chapterDuration}
-- All markdown in body fields must be valid and render cleanly
+- All markdown in body fields must be valid
 - Make content progressively build on previous chapters`;
 
   return withRetry(async () => {
@@ -185,9 +253,21 @@ Rules:
       const result = await model.generateContent(prompt);
       const response = await result.response;
       const text = response.text();
+      console.log(`Chapter ${chapterNumber} raw response length:`, text?.length || 0);
       return parseGeminiJSON(text);
     } catch (error) {
-      console.error('Error generating chapter content:', error);
+      console.error(`Error generating chapter ${chapterNumber} content:`, error);
+      const errorMessage = error?.message || error?.toString() || 'Unknown error';
+      
+      if (errorMessage.includes('API key') || errorMessage.includes('API_KEY')) {
+        throw new Error('Invalid API key. Please check your Gemini API key.');
+      }
+      if (errorMessage.includes('quota') || errorMessage.includes('rate') || errorMessage.includes('429')) {
+        throw new Error(`API quota exceeded for chapter ${chapterNumber}. Please wait and try again.`);
+      }
+      if (errorMessage.includes('blocked') || errorMessage.includes('safety')) {
+        throw new Error(`Content blocked for chapter ${chapterNumber}. Try a different topic.`);
+      }
       throw new Error(`Failed to generate chapter ${chapterNumber} content. Please try again.`);
     }
   });
@@ -353,7 +433,7 @@ Your response MUST be a valid JSON object with this exact structure:
 {
   "text": "Your markdown-formatted answer here. Be helpful, concise, and encouraging.",
   "visual": null or {
-    "type": "chart" | "timeline" | "process" | "table" | "infographic" | "image",
+    "type": "chart" | "timeline" | "process" | "table" | "infographic" | "image" | "algorithm",
     "data": <visual-specific data object>
   }
 }
@@ -418,8 +498,20 @@ For "image" type (will fetch real image):
   }
 }
 
+For "algorithm" type (INTERACTIVE SORTING ALGORITHM ANIMATION - use when explaining sorting algorithms like bubble sort, quick sort, merge sort, etc.):
+{
+  "type": "algorithm",
+  "data": {
+    "algorithm": "bubble" | "selection" | "insertion" | "quick" | "merge",
+    "title": "Optional custom title",
+    "initialArray": [64, 34, 25, 12, 22, 11, 90],
+    "compact": false
+  }
+}
+
 RULES:
-- Include visual only when it genuinely helps (comparisons, data, processes, timelines)
+- Include visual only when it genuinely helps (comparisons, data, processes, timelines, sorting algorithms)
+- **IMPORTANT**: When user asks about sorting algorithms (bubble sort, selection sort, insertion sort, quick sort, merge sort, or any sorting algorithm in any programming language like C++, Java, Python), ALWAYS include the "algorithm" visual type to show an interactive animation
 - Keep text response under 150 words unless detailed explanation truly needed
 - Use markdown in text field for formatting
 - If no visual needed, set visual to null

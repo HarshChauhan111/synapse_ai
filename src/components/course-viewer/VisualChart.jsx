@@ -25,7 +25,26 @@ function VisualChart({
   className = '',
   compact = false,
 }) {
-  const colors = data.map((item, index) => item.color || DEFAULT_COLORS[index % DEFAULT_COLORS.length]);
+  // Ensure data is always an array with valid values
+  const normalizedData = Array.isArray(data) 
+    ? data.map((item, index) => ({
+        name: item?.name || `Item ${index + 1}`,
+        value: typeof item?.value === 'number' ? item.value : (parseFloat(item?.value) || 0),
+        color: item?.color || item?.fill || DEFAULT_COLORS[index % DEFAULT_COLORS.length],
+      }))
+    : [];
+
+  // Don't render if no valid data
+  if (normalizedData.length === 0) {
+    return (
+      <div className={`glass-card p-6 rounded-2xl ${className}`}>
+        {title && <h4 className="text-lg font-heading font-bold text-white mb-2">{title}</h4>}
+        <p className="text-white/50 text-sm">No chart data available</p>
+      </div>
+    );
+  }
+
+  const colors = normalizedData.map((item) => item.color);
 
   const containerVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -37,12 +56,12 @@ function VisualChart({
   };
 
   const CustomTooltip = ({ active, payload, label }) => {
-    if (active && payload && payload.length) {
+    if (active && payload && payload.length && payload[0]?.value !== undefined) {
       return (
         <div className="glass-card p-3 text-sm">
-          <p className="text-white font-medium">{label || payload[0].name}</p>
+          <p className="text-white font-medium">{label || payload[0]?.name || ''}</p>
           <p className="text-accent-primary">
-            {payload[0].value.toLocaleString()}
+            {typeof payload[0].value === 'number' ? payload[0].value.toLocaleString() : payload[0].value}
           </p>
         </div>
       );
@@ -57,7 +76,7 @@ function VisualChart({
       case 'bar':
         return (
           <ResponsiveContainer width="100%" height={chartHeight}>
-            <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+            <BarChart data={normalizedData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
               <XAxis dataKey="name" stroke="rgba(255,255,255,0.5)" fontSize={12} />
               <YAxis stroke="rgba(255,255,255,0.5)" fontSize={12} />
@@ -67,7 +86,7 @@ function VisualChart({
                 radius={[4, 4, 0, 0]}
                 animationDuration={animate ? 1000 : 0}
               >
-                {data.map((entry, index) => (
+                {normalizedData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={colors[index]} />
                 ))}
               </Bar>
@@ -78,7 +97,7 @@ function VisualChart({
       case 'line':
         return (
           <ResponsiveContainer width="100%" height={chartHeight}>
-            <LineChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+            <LineChart data={normalizedData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
               <XAxis dataKey="name" stroke="rgba(255,255,255,0.5)" fontSize={12} />
               <YAxis stroke="rgba(255,255,255,0.5)" fontSize={12} />
@@ -101,7 +120,7 @@ function VisualChart({
           <ResponsiveContainer width="100%" height={chartHeight}>
             <PieChart>
               <Pie
-                data={data}
+                data={normalizedData}
                 cx="50%"
                 cy="50%"
                 innerRadius={compact ? 40 : 60}
@@ -112,7 +131,7 @@ function VisualChart({
                 label={!compact ? ({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%` : false}
                 labelLine={!compact ? { stroke: 'rgba(255,255,255,0.3)' } : false}
               >
-                {data.map((entry, index) => (
+                {normalizedData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={colors[index]} />
                 ))}
               </Pie>
@@ -124,7 +143,7 @@ function VisualChart({
       case 'area':
         return (
           <ResponsiveContainer width="100%" height={chartHeight}>
-            <AreaChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+            <AreaChart data={normalizedData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
               <XAxis dataKey="name" stroke="rgba(255,255,255,0.5)" fontSize={12} />
               <YAxis stroke="rgba(255,255,255,0.5)" fontSize={12} />
@@ -144,7 +163,7 @@ function VisualChart({
       case 'radar':
         return (
           <ResponsiveContainer width="100%" height={chartHeight}>
-            <RadarChart data={data}>
+            <RadarChart data={normalizedData}>
               <PolarGrid stroke="rgba(255,255,255,0.2)" />
               <PolarAngleAxis dataKey="name" stroke="rgba(255,255,255,0.5)" fontSize={12} />
               <PolarRadiusAxis stroke="rgba(255,255,255,0.3)" fontSize={10} />
@@ -184,7 +203,7 @@ function VisualChart({
       {/* Legend for pie charts in compact mode */}
       {type === 'pie' && compact && (
         <div className="flex flex-wrap gap-2 mt-3 justify-center">
-          {data.map((item, index) => (
+          {normalizedData.map((item, index) => (
             <div key={index} className="flex items-center gap-1.5 text-xs">
               <div 
                 className="w-2.5 h-2.5 rounded-full" 

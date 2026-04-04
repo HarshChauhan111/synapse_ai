@@ -215,7 +215,7 @@ function HomePage() {
       <footer className="py-8 px-4 border-t border-white/10">
         <div className="max-w-6xl mx-auto text-center">
           <p className="text-white/40 text-sm">
-            CourseForge AI • Built with React, Gemini AI & ❤️
+            Synapse AI • Built with React, Gemini AI & ❤️
           </p>
         </div>
       </footer>

@@ -2,15 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { User, Bot, ImageOff } from 'lucide-react';
+import { User, Sparkles, ImageOff } from 'lucide-react';
 import VisualChart from '../course-viewer/VisualChart';
 import VisualTimeline from '../course-viewer/VisualTimeline';
 import VisualProcessFlow from '../course-viewer/VisualProcessFlow';
 import VisualTable from '../course-viewer/VisualTable';
 import VisualInfographic from '../course-viewer/VisualInfographic';
+import AlgorithmAnimation from '../course-viewer/AlgorithmAnimation';
 import { getSectionImage } from '../../api/imageSearch';
 
-// Visual renderer for chat messages
+// Visual renderer for chat messages with enhanced animations
 function ChatVisual({ visual }) {
   const [imageData, setImageData] = useState(null);
   const [imageLoading, setImageLoading] = useState(false);
@@ -35,85 +36,160 @@ function ChatVisual({ visual }) {
 
   const { type, data } = visual;
 
+  const visualVariants = {
+    hidden: { opacity: 0, y: 15, scale: 0.95 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: {
+        duration: 0.5,
+        ease: [0.25, 0.46, 0.45, 0.94],
+        delay: 0.2,
+      },
+    },
+  };
+
   switch (type) {
     case 'chart':
       return (
-        <VisualChart
-          type={data.chartType || 'bar'}
-          data={data.data}
-          title={data.title}
-          description={data.description}
-          compact
-          className="mt-3"
-        />
+        <motion.div
+          variants={visualVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          <VisualChart
+            type={data.chartType || 'bar'}
+            data={data.data}
+            title={data.title}
+            description={data.description}
+            compact
+            animate
+            className="mt-3 !p-4 !rounded-xl bg-white/[0.02] border border-white/[0.05]"
+          />
+        </motion.div>
       );
 
     case 'timeline':
       return (
-        <VisualTimeline
-          events={data.events}
-          title={data.title}
-          compact
-          className="mt-3"
-        />
+        <motion.div
+          variants={visualVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          <VisualTimeline
+            events={data.events}
+            title={data.title}
+            compact
+            className="mt-3 !p-4 !rounded-xl bg-white/[0.02] border border-white/[0.05]"
+          />
+        </motion.div>
       );
 
     case 'process':
       return (
-        <VisualProcessFlow
-          steps={data.steps}
-          title={data.title}
-          compact
-          className="mt-3"
-        />
+        <motion.div
+          variants={visualVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          <VisualProcessFlow
+            steps={data.steps}
+            title={data.title}
+            compact
+            className="mt-3 !p-4 !rounded-xl bg-white/[0.02] border border-white/[0.05]"
+          />
+        </motion.div>
       );
 
     case 'table':
       return (
-        <VisualTable
-          columns={data.columns}
-          rows={data.rows}
-          title={data.title}
-          compact
-          className="mt-3"
-        />
+        <motion.div
+          variants={visualVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          <VisualTable
+            columns={data.columns}
+            rows={data.rows}
+            title={data.title}
+            compact
+            className="mt-3 !p-4 !rounded-xl bg-white/[0.02] border border-white/[0.05]"
+          />
+        </motion.div>
       );
 
     case 'infographic':
       return (
-        <VisualInfographic
-          stats={data.stats}
-          title={data.title}
-          layout="row"
-          className="mt-3"
-        />
+        <motion.div
+          variants={visualVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          <VisualInfographic
+            stats={data.stats}
+            title={data.title}
+            layout="row"
+            className="mt-3 !p-4 !rounded-xl bg-white/[0.02] border border-white/[0.05]"
+          />
+        </motion.div>
       );
 
     case 'image':
       if (imageLoading) {
         return (
-          <div className="mt-3 rounded-lg overflow-hidden bg-white/5 animate-pulse h-32" />
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="mt-3 rounded-xl overflow-hidden bg-white/[0.02] animate-pulse h-32"
+          />
         );
       }
       if (imageError || !imageData) {
         return (
-          <div className="mt-3 rounded-lg overflow-hidden bg-white/5 h-32 flex items-center justify-center">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="mt-3 rounded-xl overflow-hidden bg-white/[0.02] h-32 flex items-center justify-center"
+          >
             <ImageOff className="w-8 h-8 text-white/20" />
-          </div>
+          </motion.div>
         );
       }
       return (
-        <div className="mt-3 rounded-lg overflow-hidden">
+        <motion.div
+          variants={visualVariants}
+          initial="hidden"
+          animate="visible"
+          className="mt-3 rounded-xl overflow-hidden"
+        >
           <img
             src={imageData.url || imageData.thumbnail}
             alt={data.caption || data.searchQuery}
-            className="w-full h-auto rounded-lg"
+            className="w-full h-auto rounded-xl"
             onError={() => setImageError(true)}
           />
           {data.caption && (
-            <p className="text-xs text-white/50 mt-1">{data.caption}</p>
+            <p className="text-xs text-white/50 mt-1.5 px-1">{data.caption}</p>
           )}
-        </div>
+        </motion.div>
+      );
+
+    case 'algorithm':
+      return (
+        <motion.div
+          variants={visualVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          <AlgorithmAnimation
+            algorithm={data.algorithm || 'bubble'}
+            initialArray={data.initialArray}
+            title={data.title}
+            compact={data.compact}
+            className="mt-3"
+          />
+        </motion.div>
       );
 
     default:
@@ -132,8 +208,8 @@ function ChatMessage({ message }) {
   const messageVariants = {
     initial: {
       opacity: 0,
-      y: 20,
-      scale: 0.95,
+      y: 15,
+      scale: 0.98,
     },
     animate: {
       opacity: 1,
@@ -141,13 +217,13 @@ function ChatMessage({ message }) {
       scale: 1,
       transition: {
         duration: 0.3,
-        ease: 'easeOut',
+        ease: [0.25, 0.46, 0.45, 0.94],
       },
     },
     exit: {
       opacity: 0,
-      scale: 0.95,
-      transition: { duration: 0.2 },
+      scale: 0.98,
+      transition: { duration: 0.15 },
     },
   };
 
@@ -167,34 +243,34 @@ function ChatMessage({ message }) {
     >
       <div
         className={`
-          flex gap-2 max-w-[85%]
+          flex gap-2.5 max-w-[90%]
           ${isUser ? 'flex-row-reverse' : 'flex-row'}
         `}
       >
-        {/* Avatar */}
+        {/* Avatar - minimalist style */}
         <div
           className={`
-            w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center
+            w-7 h-7 rounded-lg flex-shrink-0 flex items-center justify-center
             ${isUser
-              ? 'bg-gradient-to-br from-accent-primary to-accent-secondary'
-              : 'bg-white/10'
+              ? 'bg-white/10'
+              : 'bg-white/[0.03] border border-white/[0.08]'
             }
           `}
         >
           {isUser ? (
-            <User className="w-4 h-4 text-white" />
+            <User className="w-3.5 h-3.5 text-white/60" />
           ) : (
-            <Bot className="w-4 h-4 text-accent-primary" />
+            <Sparkles className="w-3.5 h-3.5 text-accent-primary/80" />
           )}
         </div>
 
-        {/* Message bubble */}
+        {/* Message bubble - minimalist style */}
         <div
           className={`
             px-4 py-3 rounded-2xl
             ${isUser
-              ? 'bg-gradient-to-br from-accent-primary to-accent-secondary text-white rounded-br-md'
-              : 'glass-card text-white/90 rounded-bl-md'
+              ? 'bg-white/10 text-white/90 rounded-tr-md'
+              : 'bg-white/[0.03] border border-white/[0.06] text-white/85 rounded-tl-md'
             }
           `}
         >
@@ -211,7 +287,7 @@ function ChatMessage({ message }) {
                 </ReactMarkdown>
               </div>
               
-              {/* Visual content */}
+              {/* Visual content with enhanced animations */}
               {visualData && <ChatVisual visual={visualData} />}
             </>
           )}
@@ -219,8 +295,8 @@ function ChatMessage({ message }) {
           {/* Timestamp */}
           <p
             className={`
-              text-[10px] mt-1
-              ${isUser ? 'text-white/60 text-right' : 'text-white/40'}
+              text-[10px] mt-1.5
+              ${isUser ? 'text-white/40 text-right' : 'text-white/30'}
             `}
           >
             {formatTime(timestamp)}

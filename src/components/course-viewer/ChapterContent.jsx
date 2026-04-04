@@ -5,90 +5,179 @@ import remarkGfm from 'remark-gfm';
 import { Lightbulb, CheckCircle, BookOpen, ImageOff } from 'lucide-react';
 import { getSectionImage } from '../../api/imageSearch';
 import WikipediaPanel from './WikipediaPanel';
-import GeminiVisualization from './GeminiVisualization';
+import VisualChart from './VisualChart';
+import VisualTimeline from './VisualTimeline';
+import VisualProcessFlow from './VisualProcessFlow';
+import VisualTable from './VisualTable';
+import VisualInfographic from './VisualInfographic';
 
-// Inline section image component
-function SectionInlineImage({ searchQuery, caption, accentColor }) {
+// Dynamic section visual renderer - only renders when visual data exists
+function SectionVisual({ visual, accentColor }) {
   const [imageData, setImageData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
+  const [imageLoading, setImageLoading] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
-    if (!searchQuery) {
-      setLoading(false);
-      return;
+    if (visual?.type === 'image' && visual?.searchQuery) {
+      setImageLoading(true);
+      getSectionImage(visual.searchQuery, 'auto')
+        .then(img => {
+          setImageData(img);
+          setImageLoading(false);
+        })
+        .catch(() => {
+          setImageError(true);
+          setImageLoading(false);
+        });
     }
-    
-    getSectionImage(searchQuery, 'auto')
-      .then(img => {
-        setImageData(img);
-        setLoading(false);
-      })
-      .catch(() => {
-        setError(true);
-        setLoading(false);
-      });
-  }, [searchQuery]);
+  }, [visual]);
 
-  if (!searchQuery) return null;
+  if (!visual || !visual.type) return null;
 
-  if (loading) {
-    return (
-      <div className="my-6 rounded-xl overflow-hidden bg-white/5 h-48 animate-pulse" />
-    );
-  }
+  const visualVariants = {
+    hidden: { opacity: 0, y: 20, scale: 0.98 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: {
+        duration: 0.5,
+        ease: [0.25, 0.46, 0.45, 0.94],
+      },
+    },
+  };
 
-  if (error || !imageData) {
-    return (
-      <div className="my-6 rounded-xl overflow-hidden bg-white/5 h-48 flex items-center justify-center">
-        <ImageOff className="w-10 h-10 text-white/20" />
-      </div>
-    );
-  }
+  switch (visual.type) {
+    case 'chart':
+      return (
+        <motion.div
+          variants={visualVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          className="my-6"
+        >
+          <VisualChart
+            type={visual.chartType || 'bar'}
+            data={visual.data || []}
+            title={visual.title}
+            accentColor={accentColor}
+            animate
+          />
+        </motion.div>
+      );
 
-  return (
-    <motion.figure
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      className="my-6 rounded-xl overflow-hidden"
-      style={{ borderColor: `${accentColor}30`, borderWidth: 1 }}
-    >
-      <div className="relative aspect-video overflow-hidden">
-        <img
-          src={imageData.url || imageData.thumbnail}
-          alt={caption || searchQuery}
-          className="w-full h-full object-cover"
-          onError={() => setError(true)}
-        />
-        {imageData.source && (
-          <div className="absolute top-3 right-3 px-2 py-1 rounded-full text-xs font-medium bg-black/50 text-white/80">
-            {imageData.source}
+    case 'timeline':
+      return (
+        <motion.div
+          variants={visualVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          className="my-6"
+        >
+          <VisualTimeline
+            events={visual.events || []}
+            title={visual.title}
+            accentColor={accentColor}
+          />
+        </motion.div>
+      );
+
+    case 'process':
+      return (
+        <motion.div
+          variants={visualVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          className="my-6"
+        >
+          <VisualProcessFlow
+            steps={visual.steps || []}
+            title={visual.title}
+            accentColor={accentColor}
+          />
+        </motion.div>
+      );
+
+    case 'table':
+      return (
+        <motion.div
+          variants={visualVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          className="my-6"
+        >
+          <VisualTable
+            columns={visual.columns || []}
+            rows={visual.rows || []}
+            title={visual.title}
+            accentColor={accentColor}
+          />
+        </motion.div>
+      );
+
+    case 'infographic':
+      return (
+        <motion.div
+          variants={visualVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          className="my-6"
+        >
+          <VisualInfographic
+            stats={visual.stats || []}
+            title={visual.title}
+            accentColor={accentColor}
+          />
+        </motion.div>
+      );
+
+    case 'image':
+      if (imageLoading) {
+        return (
+          <div className="my-6 rounded-xl overflow-hidden bg-white/5 h-48 animate-pulse" />
+        );
+      }
+      if (imageError || !imageData) {
+        return null; // Don't show broken image placeholder
+      }
+      return (
+        <motion.figure
+          variants={visualVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          className="my-6 rounded-xl overflow-hidden"
+          style={{ borderColor: `${accentColor}30`, borderWidth: 1 }}
+        >
+          <div className="relative aspect-video overflow-hidden">
+            <img
+              src={imageData.url || imageData.thumbnail}
+              alt={visual.caption || visual.searchQuery}
+              className="w-full h-full object-cover"
+              onError={() => setImageError(true)}
+            />
+            {imageData.source && (
+              <div className="absolute top-3 right-3 px-2 py-1 rounded-full text-xs font-medium bg-black/50 text-white/80">
+                {imageData.source}
+              </div>
+            )}
           </div>
-        )}
-      </div>
-      {caption && (
-        <figcaption className="p-3 text-sm text-white/60 bg-white/5 border-t border-white/5">
-          {caption}
-        </figcaption>
-      )}
-    </motion.figure>
-  );
-}
+          {visual.caption && (
+            <figcaption className="p-3 text-sm text-white/60 bg-white/5 border-t border-white/5">
+              {visual.caption}
+            </figcaption>
+          )}
+        </motion.figure>
+      );
 
-/**
- * Determine which visualization type is best for a section
- */
-function getVisualizationType(heading, body) {
-  const combined = `${heading} ${body}`.toLowerCase();
-  
-  if (/\bstep|process|workflow|pipeline|cycle|phase\b/.test(combined)) return 'diagram';
-  if (/\bstatistic|percent|growth|data|compare|ratio|metric\b/.test(combined)) return 'chart';
-  if (/\barchitecture|struct|system|component|layer|module\b/.test(combined)) return 'diagram';
-  if (/\btimeline|evolution|history|progress\b/.test(combined)) return 'animation';
-  if (/\banimation|transition|transform|motion|dynamic\b/.test(combined)) return 'animation';
-  
-  return 'diagram';
+    default:
+      return null;
+  }
 }
 
 function ChapterContent({ chapterData, chapterIndex }) {
@@ -139,22 +228,9 @@ function ChapterContent({ chapterData, chapterIndex }) {
             </ReactMarkdown>
           </div>
 
-          {/* Inline image for first two sections only (to limit API calls) */}
-          {index < 2 && section.heading && (
-            <SectionInlineImage
-              searchQuery={`${section.heading} ${chapterTitle || ''}`.trim()}
-              caption={section.heading}
-              accentColor={accentColor}
-            />
-          )}
-
-          {/* Gemini AI Visualization - for every 3rd section (index 2, 5, etc.) */}
-          {index === 2 && (
-            <GeminiVisualization
-              topic={`${section.heading} - ${chapterTitle}`}
-              type={getVisualizationType(section.heading, section.body)}
-              accentColor={accentColor}
-            />
+          {/* Dynamic visual - only renders if LLM provided one */}
+          {section.visual && (
+            <SectionVisual visual={section.visual} accentColor={accentColor} />
           )}
 
           {/* Callout box */}
