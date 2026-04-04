@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { User, Sparkles, ImageOff } from 'lucide-react';
+import { ImageOff } from 'lucide-react';
 import VisualChart from '../course-viewer/VisualChart';
 import VisualTimeline from '../course-viewer/VisualTimeline';
 import VisualProcessFlow from '../course-viewer/VisualProcessFlow';
@@ -205,103 +205,38 @@ function ChatMessage({ message }) {
   const textContent = typeof content === 'object' ? content.text : content;
   const visualData = typeof content === 'object' ? content.visual : visual;
 
-  const messageVariants = {
-    initial: {
-      opacity: 0,
-      y: 15,
-      scale: 0.98,
-    },
-    animate: {
-      opacity: 1,
-      y: 0,
-      scale: 1,
-      transition: {
-        duration: 0.3,
-        ease: [0.25, 0.46, 0.45, 0.94],
-      },
-    },
-    exit: {
-      opacity: 0,
-      scale: 0.98,
-      transition: { duration: 0.15 },
-    },
-  };
-
-  const formatTime = (isoString) => {
-    const date = new Date(isoString);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  };
-
   return (
     <motion.div
-      variants={messageVariants}
-      initial="initial"
-      animate="animate"
-      exit="exit"
-      layout
-      className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}
+      initial={{ opacity: 0, scale: 0.8, y: 20 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      transition={{ type: 'spring', damping: 20, stiffness: 300 }}
+      className={`mb-3 flex w-full ${isUser ? 'justify-end' : 'justify-start'}`}
     >
       <div
-        className={`
-          flex gap-2.5 max-w-[90%]
-          ${isUser ? 'flex-row-reverse' : 'flex-row'}
-        `}
+        className={`max-w-[90%] px-4 py-2.5 text-[14px] font-medium shadow-sm transition-colors duration-200 sm:max-w-[85%] sm:px-5 sm:py-3 sm:text-[15px] ${
+          isUser
+            ? 'rounded-[16px] rounded-br-[4px] border border-neutral-100 bg-white text-neutral-800'
+            : 'rounded-[16px] rounded-bl-[4px] border border-sky-400/20 bg-[#1DA1F2] text-white shadow-sky-500/10'
+        }`}
       >
-        {/* Avatar */}
-        <div
-          className={`
-            w-7 h-7 rounded-lg flex-shrink-0 flex items-center justify-center
-            ${isUser
-              ? 'bg-neutral-900'
-              : 'bg-blue-50 border border-blue-100'
-            }
-          `}
-        >
-          {isUser ? (
-            <User className="w-3.5 h-3.5 text-white" />
-          ) : (
-            <Sparkles className="w-3.5 h-3.5 text-blue-600" />
-          )}
-        </div>
-
-        {/* Message bubble */}
-        <div
-          className={`
-            px-4 py-3 rounded-2xl shadow-sm
-            ${isUser
-              ? 'bg-neutral-900 text-white rounded-tr-md'
-              : 'bg-white border border-neutral-200 text-neutral-700 rounded-tl-md'
-            }
-          `}
-        >
-          {/* Content */}
-          {isUser ? (
-            <p className="text-sm leading-relaxed whitespace-pre-wrap">
-              {textContent}
-            </p>
-          ) : (
-            <>
-              <div className="text-sm leading-relaxed markdown-content prose prose-sm max-w-none">
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                  {textContent || ''}
-                </ReactMarkdown>
-              </div>
-              
-              {/* Visual content with enhanced animations */}
-              {visualData && <ChatVisual visual={visualData} />}
-            </>
-          )}
-
-          {/* Timestamp */}
-          <p
-            className={`
-              text-[10px] mt-1.5
-              ${isUser ? 'text-white/50 text-right' : 'text-neutral-400'}
-            `}
-          >
-            {formatTime(timestamp)}
+        {/* Content */}
+        {isUser ? (
+          <p className="leading-relaxed whitespace-pre-wrap">
+            {textContent}
           </p>
-        </div>
+        ) : (
+          <>
+            <div className="leading-relaxed text-white [&_p]:text-white [&_h1]:text-white [&_h2]:text-white [&_h3]:text-white [&_h4]:text-white [&_li]:text-white [&_strong]:text-white [&_em]:text-white [&_a]:text-sky-100 [&_code]:text-sky-100 [&_code]:bg-sky-600/30 [&_pre]:bg-sky-600/20 [&_pre]:p-3 [&_pre]:rounded-lg">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {textContent || ''}
+              </ReactMarkdown>
+            </div>
+            
+            {/* Visual content with enhanced animations */}
+            {visualData && <ChatVisual visual={visualData} />}
+          </>
+        )}
       </div>
     </motion.div>
   );

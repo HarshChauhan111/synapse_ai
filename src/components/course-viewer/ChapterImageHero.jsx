@@ -154,16 +154,6 @@ function ChapterImageHero({ imagePrompt, accentColor, chapterIndex, layout }) {
           {imageSource === 'pexels' ? '📷 Pexels' : imageSource === 'wikipedia' ? '📚 Wikipedia' : '🎨 AI Generated'}
         </div>
       )}
-
-      {/* Gradient overlay for text readability */}
-      {imageLoaded && (
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background: `linear-gradient(to bottom, transparent 0%, ${accentColor}10 50%, rgba(255, 255, 255, 0.95) 100%)`,
-          }}
-        />
-      )}
     </div>
   );
 }

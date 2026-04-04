@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -12,6 +12,8 @@ import VisualTable from './VisualTable';
 import VisualInfographic from './VisualInfographic';
 import AlgorithmAnimation from './AlgorithmAnimation';
 import DynamicAnimation from './DynamicAnimation';
+import TextSelectionPopup from '../common/TextSelectionPopup';
+import { useChatbot } from '../../context/ChatbotContext';
 
 // Dynamic section visual renderer - only renders when visual data exists
 function SectionVisual({ visual, accentColor }) {
@@ -227,6 +229,16 @@ function ChapterContent({ chapterData, chapterIndex }) {
     chapterTitle,
   } = chapterData;
 
+  const contentRef = useRef(null);
+  const { openPanelWithMessage } = useChatbot();
+
+  // Handle "Ask Synapse" with selected text
+  const handleAskSynapse = (selectedText) => {
+    // Open the chatbot panel with the question
+    const question = `Explain this: "${selectedText}"`;
+    openPanelWithMessage(question);
+  };
+
   const sectionVariants = {
     hidden: { opacity: 0, y: 30 },
     visible: {
@@ -237,7 +249,13 @@ function ChapterContent({ chapterData, chapterIndex }) {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-6 py-12 space-y-12">
+    <div ref={contentRef} className="max-w-4xl mx-auto px-6 py-12 space-y-12">
+      {/* Text Selection Popup */}
+      <TextSelectionPopup 
+        onAskSynapse={handleAskSynapse} 
+        containerRef={contentRef}
+      />
+
       {/* Wikipedia Knowledge Panel for the chapter topic */}
       <WikipediaPanel
         topic={chapterTitle}

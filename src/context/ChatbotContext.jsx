@@ -6,6 +6,7 @@ const initialState = {
   messages: [],
   isLoading: false,
   error: null,
+  pendingMessage: null, // Message to send when panel opens
 };
 
 // Action types
@@ -18,6 +19,8 @@ const ACTIONS = {
   SET_ERROR: 'SET_ERROR',
   CLEAR_MESSAGES: 'CLEAR_MESSAGES',
   CLEAR_ERROR: 'CLEAR_ERROR',
+  SET_PENDING_MESSAGE: 'SET_PENDING_MESSAGE',
+  CLEAR_PENDING_MESSAGE: 'CLEAR_PENDING_MESSAGE',
 };
 
 // Reducer
@@ -74,6 +77,18 @@ function chatbotReducer(state, action) {
       return {
         ...state,
         error: null,
+      };
+
+    case ACTIONS.SET_PENDING_MESSAGE:
+      return {
+        ...state,
+        pendingMessage: action.payload,
+      };
+
+    case ACTIONS.CLEAR_PENDING_MESSAGE:
+      return {
+        ...state,
+        pendingMessage: null,
       };
 
     default:
@@ -146,6 +161,25 @@ export function ChatbotProvider({ children }) {
     dispatch({ type: ACTIONS.CLEAR_ERROR });
   }, []);
 
+  // Set a pending message to be sent when panel opens
+  const setPendingMessage = useCallback((message) => {
+    dispatch({
+      type: ACTIONS.SET_PENDING_MESSAGE,
+      payload: message,
+    });
+  }, []);
+
+  // Clear pending message
+  const clearPendingMessage = useCallback(() => {
+    dispatch({ type: ACTIONS.CLEAR_PENDING_MESSAGE });
+  }, []);
+
+  // Open panel with a message to send
+  const openPanelWithMessage = useCallback((message) => {
+    setPendingMessage(message);
+    openPanel();
+  }, [setPendingMessage, openPanel]);
+
   // Get conversation history for API calls
   const getConversationHistory = useCallback(() => {
     return state.messages.map(msg => ({
@@ -170,6 +204,9 @@ export function ChatbotProvider({ children }) {
     clearMessages,
     clearError,
     getConversationHistory,
+    setPendingMessage,
+    clearPendingMessage,
+    openPanelWithMessage,
   };
 
   return (

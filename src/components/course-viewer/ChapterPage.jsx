@@ -95,8 +95,8 @@ function ChapterPage({
         initial="initial"
         animate="animate"
         exit="exit"
-        transition={{ duration: 0.5 }}
-        className="pb-24 bg-white" // Space for pagination bar
+        transition={{ duration: 0.4 }}
+        className="bg-white"
       >
         {/* Chapter Hero */}
         <ChapterHero

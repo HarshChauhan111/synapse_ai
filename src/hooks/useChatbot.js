@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { chatWithTutor } from '../api/gemini';
 import { useChatbot as useChatbotContext } from '../context/ChatbotContext';
 import { useCourse } from '../context/CourseContext';
@@ -12,6 +12,7 @@ export function useChatbotHook() {
     messages,
     isLoading,
     error,
+    pendingMessage,
     togglePanel,
     openPanel,
     closePanel,
@@ -22,6 +23,8 @@ export function useChatbotHook() {
     clearMessages,
     clearError,
     getConversationHistory,
+    clearPendingMessage,
+    openPanelWithMessage,
   } = useChatbotContext();
 
   const {
@@ -88,6 +91,14 @@ export function useChatbotHook() {
     getConversationHistory,
   ]);
 
+  // Handle pending message when panel opens
+  useEffect(() => {
+    if (isOpen && pendingMessage && !isLoading) {
+      sendMessage(pendingMessage);
+      clearPendingMessage();
+    }
+  }, [isOpen, pendingMessage, isLoading, sendMessage, clearPendingMessage]);
+
   /**
    * Clear chat and start fresh
    */
@@ -121,6 +132,7 @@ export function useChatbotHook() {
     sendMessage,
     resetChat,
     clearError,
+    openPanelWithMessage,
     
     // Utils
     getContextInfo,

@@ -105,16 +105,16 @@ function CoursePage() {
           error={loadError || generationError}
           onRetry={retryChapter}
         />
-      </div>
 
-      {/* Chapter Pagination */}
-      <ChapterPagination
-        totalChapters={selectedChapterCount}
-        currentChapter={currentChapterIndex}
-        visitedChapters={visitedChapters}
-        onNavigate={handleNavigateToChapter}
-        isGenerating={chapterLoading || isGenerating}
-      />
+        {/* Chapter Pagination - at bottom of content */}
+        <ChapterPagination
+          totalChapters={selectedChapterCount}
+          currentChapter={currentChapterIndex}
+          visitedChapters={visitedChapters}
+          onNavigate={handleNavigateToChapter}
+          isGenerating={chapterLoading || isGenerating}
+        />
+      </div>
 
       {/* Chatbot */}
       <ChatbotToggleButton

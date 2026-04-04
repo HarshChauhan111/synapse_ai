@@ -20,13 +20,13 @@ function ChatbotToggleButton({ isOpen, onClick }) {
       <motion.div
         whileHover={{ x: -4, scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
-        className="relative bg-white/5 backdrop-blur-xl border border-white/10 py-5 px-2.5 rounded-l-xl shadow-lg"
+        className="relative bg-[#1DA1F2] py-5 px-2.5 rounded-l-xl shadow-lg shadow-sky-500/25 border border-sky-400/20"
       >
         {/* Subtle accent line */}
         <motion.div
-          className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-8 rounded-full bg-gradient-to-b from-accent-primary/60 to-accent-secondary/60"
+          className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-8 rounded-full bg-white/40"
           animate={{
-            opacity: [0.5, 1, 0.5],
+            opacity: [0.3, 0.7, 0.3],
             height: ['24px', '32px', '24px'],
           }}
           transition={{
@@ -48,10 +48,10 @@ function ChatbotToggleButton({ isOpen, onClick }) {
               ease: 'easeInOut',
             }}
           >
-            <Sparkles className="w-4 h-4 text-white/70" />
+            <Sparkles className="w-4 h-4 text-white" />
           </motion.div>
           <span
-            className="text-[10px] font-medium text-white/60 tracking-wide"
+            className="text-[10px] font-semibold text-white tracking-wide"
             style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}
           >
             Ask AI
@@ -64,7 +64,7 @@ function ChatbotToggleButton({ isOpen, onClick }) {
           transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
           className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1.5"
         >
-          <ChevronLeft className="w-3 h-3 text-white/40" />
+          <ChevronLeft className="w-3 h-3 text-white/70" />
         </motion.div>
       </motion.div>
     </motion.button>

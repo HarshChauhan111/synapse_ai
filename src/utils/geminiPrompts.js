@@ -20,7 +20,7 @@ Return ONLY a valid JSON object (no markdown, no explanation) in exactly this fo
 `;
 
 export const getChapterContentPrompt = (courseTitle, chapterNumber, totalChapters, chapterDuration) => `
-You are an expert educator and content designer.
+You are an expert educator and content designer focused on learner engagement.
 
 Course: "${courseTitle}"
 Chapter: ${chapterNumber} of ${totalChapters}
@@ -45,18 +45,71 @@ Generate comprehensive chapter content and return ONLY a valid JSON object in ex
       "heading": "Section heading",
       "body": "Rich markdown content — use bold, bullet lists, code blocks, blockquotes, etc.",
       "hasCallout": true,
-      "calloutText": "Key insight or important note for this section"
+      "calloutText": "Key insight or important note for this section",
+      "visual": null
     }
   ],
   "keyTakeaways": ["Takeaway 1", "Takeaway 2", "Takeaway 3"],
   "chapterSummary": "A 2-3 sentence summary of what was covered"
 }
 
+VISUAL FIELD FOR SECTIONS:
+For each section, analyze if the topic would benefit from an interactive animation. Include a "visual" field ONLY when animation genuinely improves understanding.
+
+Animation IS useful when the concept involves:
+- Movement, change, transformation, or flow (e.g., data flowing through a pipeline)
+- Step-by-step processes or procedures (e.g., how to compile code, authentication flow)
+- Algorithms or sequential operations (e.g., sorting, searching, parsing)
+- Timelines or chronological events (e.g., history of AI, software evolution)
+- Comparisons between concepts (e.g., SQL vs NoSQL, REST vs GraphQL)
+- System interactions or architectures (e.g., client-server, microservices)
+- State changes or transformations (e.g., lifecycle hooks, data transformation)
+
+Animation is NOT needed for:
+- Purely theoretical or philosophical discussions
+- Simple definitions or terminology explanations
+- Static facts or reference information
+
+When animation would help, set the visual field as:
+{
+  "type": "animation",
+  "animation_required": true,
+  "animation_type": "process_flow" | "algorithm_stepper" | "timeline" | "comparison" | "system_flow" | "conceptual_transition",
+  "title": "Animation title",
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Short step title",
+      "visual_state": "What to show visually (description or array for algorithms)",
+      "highlight": [0, 1],
+      "explanation": "What is happening in this step"
+    }
+  ]
+}
+
+Animation type guidelines:
+- process_flow: For step-by-step procedures (3-6 steps, each with title + explanation)
+- algorithm_stepper: For algorithms showing data transformation (include visual_state as array/description, highlight indices)
+- timeline: For chronological events (include year/time in each step)
+- comparison: For comparing 2+ items (each step has items array with {title, description})
+- system_flow: For architectures (each step has nodes array with {icon, label}, and active index)
+- conceptual_transition: For abstract concept evolution (each step has title, icon emoji, explanation)
+
+You may also use other visual types for variety:
+- { "type": "chart", "chartType": "bar|line|pie", "title": "...", "data": [...] }
+- { "type": "timeline", "title": "...", "events": [...] }
+- { "type": "process", "title": "...", "steps": [...] }
+- { "type": "infographic", "title": "...", "stats": [...] }
+- { "type": "table", "title": "...", "columns": [...], "rows": [...] }
+
 Rules:
 - heroType must alternate meaningfully — use "chart" when data or comparisons are central to the topic
 - accentColor must be unique for each chapter
 - sections should have 4-6 sections with rich educational content
 - All markdown in body fields must be valid and render cleanly
+- Include "visual" with type "animation" for at least 1-2 sections if the chapter topic benefits from it
+- Keep animation steps sequential, clear, and render-friendly (4-8 steps ideal)
+- Do NOT force animation for sections that don't need it — quality over quantity
 `;
 
 export const getChatbotSystemPrompt = (courseTitle, chapterTitle, chapterContent) => `
