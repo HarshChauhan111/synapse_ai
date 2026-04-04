@@ -32,7 +32,7 @@ function Navbar() {
               <Sparkles className="w-5 h-5 text-white" />
             </motion.div>
             <span className="font-heading font-bold text-xl text-white group-hover:text-gradient transition-all">
-              synapse ai
+              Synapse AI
             </span>
           </Link>
 
