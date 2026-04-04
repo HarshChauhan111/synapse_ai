@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { Lightbulb, CheckCircle, BookOpen, ImageOff } from 'lucide-react';
+import { Lightbulb, CheckCircle, BookOpen } from 'lucide-react';
 import { getSectionImage } from '../../api/imageSearch';
 import WikipediaPanel from './WikipediaPanel';
 import VisualChart from './VisualChart';

@@ -167,10 +167,12 @@ export const getSectionImage = async (searchTerm, imageType = 'auto') => {
   return await getBestImage(searchTerm, { preferredSource });
 };
 
-export default {
+const imageSearchAPI = {
   getBestImage,
   getMultipleImages,
   getChapterHeroImage,
   getSectionImage,
   determineBestSource,
 };
+
+export default imageSearchAPI;

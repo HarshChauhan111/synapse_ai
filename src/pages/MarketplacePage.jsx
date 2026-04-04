@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  Search, Filter, TrendingUp, BookOpen, Bookmark, 
-  ChevronDown, X, Loader2, Store
+  Search, Filter, TrendingUp, BookOpen, 
+  X, Loader2, Store
 } from 'lucide-react';
 import CourseCard from '../components/marketplace/CourseCard';
 import { marketplaceAPI } from '../api/backend';

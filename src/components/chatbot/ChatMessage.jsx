@@ -198,7 +198,7 @@ function ChatVisual({ visual }) {
 }
 
 function ChatMessage({ message }) {
-  const { role, content, timestamp, visual } = message;
+  const { role, content, visual } = message;
   const isUser = role === 'user';
 
   // Handle both string content and object content (from new visual API)

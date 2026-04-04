@@ -113,4 +113,6 @@ export const getWikipediaImage = async (query) => {
   return images.length > 0 ? images[0] : null;
 };
 
-export default { searchWikipediaImages, getWikipediaSummary, getWikipediaImage };
+const wikipediaAPI = { searchWikipediaImages, getWikipediaSummary, getWikipediaImage };
+
+export default wikipediaAPI;

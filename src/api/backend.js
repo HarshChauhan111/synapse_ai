@@ -355,10 +355,12 @@ export const pdfAPI = {
   },
 };
 
-export default {
+const backendAPI = {
   auth: authAPI,
   courses: courseAPI,
   quiz: quizAPI,
   marketplace: marketplaceAPI,
   pdf: pdfAPI,
 };
+
+export default backendAPI;

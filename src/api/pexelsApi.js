@@ -53,4 +53,6 @@ export const getPexelsImage = async (query) => {
   return images.length > 0 ? images[0] : null;
 };
 
-export default { searchPexelsImages, getPexelsImage };
+const pexelsAPI = { searchPexelsImages, getPexelsImage };
+
+export default pexelsAPI;
