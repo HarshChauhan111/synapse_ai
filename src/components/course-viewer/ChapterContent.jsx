@@ -10,6 +10,8 @@ import VisualTimeline from './VisualTimeline';
 import VisualProcessFlow from './VisualProcessFlow';
 import VisualTable from './VisualTable';
 import VisualInfographic from './VisualInfographic';
+import AlgorithmAnimation from './AlgorithmAnimation';
+import DynamicAnimation from './DynamicAnimation';
 
 // Dynamic section visual renderer - only renders when visual data exists
 function SectionVisual({ visual, accentColor }) {
@@ -139,7 +141,7 @@ function SectionVisual({ visual, accentColor }) {
     case 'image':
       if (imageLoading) {
         return (
-          <div className="my-6 rounded-xl overflow-hidden bg-white/5 h-48 animate-pulse" />
+          <div className="my-6 rounded-xl overflow-hidden bg-neutral-100 h-48 animate-pulse" />
         );
       }
       if (imageError || !imageData) {
@@ -151,8 +153,7 @@ function SectionVisual({ visual, accentColor }) {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
-          className="my-6 rounded-xl overflow-hidden"
-          style={{ borderColor: `${accentColor}30`, borderWidth: 1 }}
+          className="my-6 rounded-xl overflow-hidden border border-neutral-200"
         >
           <div className="relative aspect-video overflow-hidden">
             <img
@@ -162,17 +163,54 @@ function SectionVisual({ visual, accentColor }) {
               onError={() => setImageError(true)}
             />
             {imageData.source && (
-              <div className="absolute top-3 right-3 px-2 py-1 rounded-full text-xs font-medium bg-black/50 text-white/80">
+              <div className="absolute top-3 right-3 px-2 py-1 rounded-full text-xs font-medium bg-black/50 text-white">
                 {imageData.source}
               </div>
             )}
           </div>
           {visual.caption && (
-            <figcaption className="p-3 text-sm text-white/60 bg-white/5 border-t border-white/5">
+            <figcaption className="p-3 text-sm text-neutral-600 bg-neutral-50 border-t border-neutral-200">
               {visual.caption}
             </figcaption>
           )}
         </motion.figure>
+      );
+
+    case 'algorithm':
+      return (
+        <motion.div
+          variants={visualVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          className="my-6"
+        >
+          <AlgorithmAnimation
+            algorithm={visual.algorithm || 'bubble'}
+            initialArray={visual.initialArray}
+            title={visual.title}
+            description={visual.description}
+            accentColor={accentColor}
+          />
+        </motion.div>
+      );
+
+    case 'animation':
+      // Dynamic animation for any topic that benefits from step-by-step visualization
+      return (
+        <motion.div
+          variants={visualVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          className="my-6"
+        >
+          <DynamicAnimation
+            animation={visual}
+            title={visual.title}
+            accentColor={accentColor}
+          />
+        </motion.div>
       );
 
     default:
@@ -217,12 +255,12 @@ function ChapterContent({ chapterData, chapterIndex }) {
           className="space-y-4"
         >
           {/* Section heading */}
-          <h3 className="text-2xl font-heading font-bold text-white">
+          <h3 className="text-2xl font-heading font-bold text-neutral-900">
             {section.heading}
           </h3>
 
           {/* Section body - markdown */}
-          <div className="markdown-content text-white/80">
+          <div className="markdown-content text-neutral-700">
             <ReactMarkdown remarkPlugins={[remarkGfm]}>
               {section.body}
             </ReactMarkdown>
@@ -240,22 +278,22 @@ function ChapterContent({ chapterData, chapterIndex }) {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.3 }}
-              className="callout-box"
+              className="flex items-start gap-3 p-4 rounded-xl border"
               style={{
-                backgroundColor: `${accentColor}15`,
-                borderLeft: `4px solid ${accentColor}`,
+                backgroundColor: `${accentColor}10`,
+                borderColor: `${accentColor}30`,
               }}
             >
               <div
                 className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                style={{ backgroundColor: `${accentColor}30` }}
+                style={{ backgroundColor: `${accentColor}20` }}
               >
                 <Lightbulb
                   className="w-4 h-4"
                   style={{ color: accentColor }}
                 />
               </div>
-              <p className="text-white/80 text-sm leading-relaxed">
+              <p className="text-neutral-700 text-sm leading-relaxed">
                 {section.calloutText}
               </p>
             </motion.div>
@@ -268,20 +306,16 @@ function ChapterContent({ chapterData, chapterIndex }) {
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        className="glass-card p-6 rounded-2xl space-y-4"
-        style={{
-          borderColor: `${accentColor}40`,
-          borderWidth: 1,
-        }}
+        className="bg-white p-6 rounded-2xl space-y-4 border border-neutral-200 shadow-sm"
       >
         <div className="flex items-center gap-3">
           <div
             className="w-10 h-10 rounded-xl flex items-center justify-center"
-            style={{ backgroundColor: `${accentColor}20` }}
+            style={{ backgroundColor: `${accentColor}15` }}
           >
             <CheckCircle className="w-5 h-5" style={{ color: accentColor }} />
           </div>
-          <h4 className="text-xl font-heading font-bold text-white">
+          <h4 className="text-xl font-heading font-bold text-neutral-900">
             Key Takeaways
           </h4>
         </div>
@@ -308,7 +342,7 @@ function ChapterContent({ chapterData, chapterIndex }) {
                   {index + 1}
                 </span>
               </motion.div>
-              <span className="text-white/80">{takeaway}</span>
+              <span className="text-neutral-700">{takeaway}</span>
             </motion.li>
           ))}
         </ul>
@@ -319,14 +353,11 @@ function ChapterContent({ chapterData, chapterIndex }) {
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        className="relative p-6 rounded-2xl overflow-hidden"
-        style={{
-          background: `linear-gradient(135deg, ${accentColor}15 0%, transparent 100%)`,
-        }}
+        className="relative p-6 rounded-2xl overflow-hidden bg-neutral-50 border border-neutral-200"
       >
         {/* Background pattern */}
         <div
-          className="absolute inset-0 opacity-10"
+          className="absolute inset-0 opacity-5"
           style={{
             backgroundImage: `radial-gradient(${accentColor} 1px, transparent 1px)`,
             backgroundSize: '20px 20px',
@@ -337,16 +368,16 @@ function ChapterContent({ chapterData, chapterIndex }) {
           <div className="flex items-center gap-3">
             <div
               className="w-10 h-10 rounded-xl flex items-center justify-center"
-              style={{ backgroundColor: `${accentColor}20` }}
+              style={{ backgroundColor: `${accentColor}15` }}
             >
               <BookOpen className="w-5 h-5" style={{ color: accentColor }} />
             </div>
-            <h4 className="text-xl font-heading font-bold text-white">
+            <h4 className="text-xl font-heading font-bold text-neutral-900">
               Chapter Summary
             </h4>
           </div>
 
-          <p className="text-white/70 leading-relaxed pl-13">
+          <p className="text-neutral-600 leading-relaxed pl-13">
             {chapterSummary}
           </p>
         </div>

@@ -292,26 +292,26 @@ function AlgorithmAnimation({
   const info = algorithmInfo[selectedAlgorithm];
 
   const getBarColor = (index) => {
-    if (!currentStep) return 'bg-accent-primary/70';
+    if (!currentStep) return 'bg-blue-500';
     if (currentStep.sorted?.includes(index)) return 'bg-emerald-500';
     if (currentStep.swapped?.includes(index)) return 'bg-rose-500';
     if (currentStep.comparing?.includes(index)) return 'bg-amber-400';
     if (currentStep.pivot === index) return 'bg-violet-500';
     if (currentStep.placed?.includes(index)) return 'bg-cyan-400';
-    if (currentStep.merging?.includes(index)) return 'bg-indigo-400/50';
-    return 'bg-accent-primary/70';
+    if (currentStep.merging?.includes(index)) return 'bg-indigo-300';
+    return 'bg-blue-500';
   };
 
   return (
-    <div className={`rounded-xl bg-white/[0.02] border border-white/[0.06] overflow-hidden ${className}`}>
+    <div className={`rounded-xl bg-white border border-neutral-200 overflow-hidden shadow-sm ${className}`}>
       {/* Header */}
-      <div className="px-4 py-3 border-b border-white/[0.06] flex items-center justify-between">
+      <div className="px-4 py-3 border-b border-neutral-200 flex items-center justify-between bg-neutral-50">
         <div>
-          <h3 className="text-sm font-medium text-white/90">
+          <h3 className="text-sm font-medium text-neutral-900">
             {title || info.name}
           </h3>
           {!compact && (
-            <p className="text-xs text-white/50 mt-0.5">
+            <p className="text-xs text-neutral-500 mt-0.5">
               Time: {info.timeComplexity} • Space: {info.spaceComplexity}
             </p>
           )}
@@ -328,10 +328,10 @@ function AlgorithmAnimation({
               setCurrentStep(null);
               setIsComplete(false);
             }}
-            className="text-xs bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-white/80 focus:outline-none focus:border-accent-primary/50"
+            className="text-xs bg-white border border-neutral-200 rounded-lg px-2 py-1.5 text-neutral-700 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
           >
             {Object.entries(algorithmInfo).map(([key, { name }]) => (
-              <option key={key} value={key} className="bg-gray-900">
+              <option key={key} value={key}>
                 {name}
               </option>
             ))}
@@ -340,7 +340,7 @@ function AlgorithmAnimation({
       </div>
 
       {/* Visualization area */}
-      <div className="p-4">
+      <div className="p-4 bg-white">
         <div className="flex items-end justify-center gap-1 h-32 mb-4">
           <AnimatePresence mode="popLayout">
             {array.map((value, index) => (
@@ -364,7 +364,7 @@ function AlgorithmAnimation({
                 }}
               >
                 {!compact && array.length <= 15 && (
-                  <span className="text-[9px] text-white/80 block text-center mt-1 font-medium">
+                  <span className="text-[9px] text-white block text-center mt-1 font-medium">
                     {value}
                   </span>
                 )}
@@ -377,20 +377,20 @@ function AlgorithmAnimation({
         <div className="flex flex-wrap gap-3 justify-center mb-4 text-[10px]">
           <span className="flex items-center gap-1">
             <span className="w-2.5 h-2.5 rounded-sm bg-amber-400"></span>
-            <span className="text-white/50">Comparing</span>
+            <span className="text-neutral-500">Comparing</span>
           </span>
           <span className="flex items-center gap-1">
             <span className="w-2.5 h-2.5 rounded-sm bg-rose-500"></span>
-            <span className="text-white/50">Swapping</span>
+            <span className="text-neutral-500">Swapping</span>
           </span>
           <span className="flex items-center gap-1">
             <span className="w-2.5 h-2.5 rounded-sm bg-emerald-500"></span>
-            <span className="text-white/50">Sorted</span>
+            <span className="text-neutral-500">Sorted</span>
           </span>
           {selectedAlgorithm === 'quick' && (
             <span className="flex items-center gap-1">
               <span className="w-2.5 h-2.5 rounded-sm bg-violet-500"></span>
-              <span className="text-white/50">Pivot</span>
+              <span className="text-neutral-500">Pivot</span>
             </span>
           )}
         </div>
@@ -399,7 +399,7 @@ function AlgorithmAnimation({
         <div className="flex items-center justify-center gap-2">
           <button
             onClick={handleReset}
-            className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition-colors"
+            className="p-2 rounded-lg bg-neutral-100 hover:bg-neutral-200 text-neutral-600 hover:text-neutral-900 transition-colors"
             title="Reset"
           >
             <RotateCcw className="w-4 h-4" />
@@ -408,7 +408,7 @@ function AlgorithmAnimation({
           <button
             onClick={handleStepBackward}
             disabled={stepIndex === 0}
-            className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+            className="p-2 rounded-lg bg-neutral-100 hover:bg-neutral-200 text-neutral-600 hover:text-neutral-900 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
             title="Step Back"
           >
             <Rewind className="w-4 h-4" />
@@ -419,8 +419,8 @@ function AlgorithmAnimation({
             className={`
               p-3 rounded-xl transition-colors
               ${isPlaying 
-                ? 'bg-amber-500/20 text-amber-400 hover:bg-amber-500/30' 
-                : 'bg-accent-primary/20 text-accent-primary hover:bg-accent-primary/30'
+                ? 'bg-amber-100 text-amber-600 hover:bg-amber-200' 
+                : 'bg-blue-100 text-blue-600 hover:bg-blue-200'
               }
             `}
             title={isPlaying ? 'Pause' : 'Play'}
@@ -431,7 +431,7 @@ function AlgorithmAnimation({
           <button
             onClick={handleStepForward}
             disabled={stepIndex >= steps.length}
-            className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+            className="p-2 rounded-lg bg-neutral-100 hover:bg-neutral-200 text-neutral-600 hover:text-neutral-900 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
             title="Step Forward"
           >
             <FastForward className="w-4 h-4" />
@@ -439,7 +439,7 @@ function AlgorithmAnimation({
           
           <button
             onClick={() => generateArray()}
-            className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition-colors"
+            className="p-2 rounded-lg bg-neutral-100 hover:bg-neutral-200 text-neutral-600 hover:text-neutral-900 transition-colors"
             title="New Array"
           >
             <Shuffle className="w-4 h-4" />
@@ -449,16 +449,16 @@ function AlgorithmAnimation({
         {/* Speed control */}
         {!compact && (
           <div className="mt-4 flex items-center justify-center gap-3">
-            <span className="text-[10px] text-white/40">Speed</span>
+            <span className="text-[10px] text-neutral-400">Speed</span>
             <input
               type="range"
               min="50"
               max="800"
               value={800 - speed + 50}
               onChange={(e) => setSpeed(800 - parseInt(e.target.value) + 50)}
-              className="w-24 h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-accent-primary"
+              className="w-24 h-1 bg-neutral-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
             />
-            <span className="text-[10px] text-white/40 w-12">
+            <span className="text-[10px] text-neutral-400 w-12">
               {Math.round(1000 / speed)}x
             </span>
           </div>
@@ -466,15 +466,15 @@ function AlgorithmAnimation({
 
         {/* Progress */}
         <div className="mt-3 flex items-center justify-center gap-2">
-          <div className="h-1 flex-1 max-w-[200px] bg-white/5 rounded-full overflow-hidden">
+          <div className="h-1 flex-1 max-w-[200px] bg-neutral-200 rounded-full overflow-hidden">
             <motion.div
-              className="h-full bg-accent-primary/60"
+              className="h-full bg-blue-500"
               initial={{ width: 0 }}
               animate={{ width: `${steps.length > 0 ? (stepIndex / steps.length) * 100 : 0}%` }}
               transition={{ duration: 0.1 }}
             />
           </div>
-          <span className="text-[10px] text-white/40">
+          <span className="text-[10px] text-neutral-400">
             {stepIndex}/{steps.length} steps
           </span>
         </div>
@@ -484,7 +484,7 @@ function AlgorithmAnimation({
           <motion.p
             initial={{ opacity: 0, y: 5 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center text-xs text-emerald-400 mt-3"
+            className="text-center text-xs text-emerald-600 mt-3"
           >
             ✓ Array sorted!
           </motion.p>
@@ -493,8 +493,8 @@ function AlgorithmAnimation({
 
       {/* Description */}
       {!compact && (
-        <div className="px-4 py-3 border-t border-white/[0.06] bg-white/[0.01]">
-          <p className="text-xs text-white/50 leading-relaxed">
+        <div className="px-4 py-3 border-t border-neutral-200 bg-neutral-50">
+          <p className="text-xs text-neutral-500 leading-relaxed">
             {info.description}
           </p>
         </div>

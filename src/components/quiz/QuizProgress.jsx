@@ -7,7 +7,7 @@ function QuizProgress({ current, total, isLoadingMore = false, className = '' })
     <div className={`w-full max-w-2xl mx-auto ${className}`}>
       {/* Progress text */}
       <div className="flex items-center justify-between mb-2">
-        <span className="text-sm text-white/60">
+        <span className="text-sm text-neutral-500">
           Question {current} of {total}+
         </span>
         <div className="flex items-center gap-2">
@@ -15,13 +15,13 @@ function QuizProgress({ current, total, isLoadingMore = false, className = '' })
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="flex items-center gap-1.5 text-xs text-amber-400"
+              className="flex items-center gap-1.5 text-xs text-amber-600"
             >
               <Loader2 className="w-3 h-3 animate-spin" />
               <span>Loading more...</span>
             </motion.div>
           )}
-          <div className="flex items-center gap-1 text-sm text-white/60">
+          <div className="flex items-center gap-1 text-sm text-neutral-500">
             <Infinity className="w-4 h-4" />
             <span>Continuous</span>
           </div>
@@ -29,7 +29,7 @@ function QuizProgress({ current, total, isLoadingMore = false, className = '' })
       </div>
 
       {/* Progress bar - shows current position */}
-      <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+      <div className="h-2 bg-neutral-200 rounded-full overflow-hidden">
         <motion.div
           initial={{ width: 0 }}
           animate={{ width: `${Math.min((current / total) * 100, 100)}%` }}
@@ -63,21 +63,21 @@ function QuizProgress({ current, total, isLoadingMore = false, className = '' })
                 ${isCurrent
                   ? 'w-6 bg-gradient-to-r from-amber-500 to-orange-500'
                   : isCompleted
-                    ? 'bg-amber-500/60'
-                    : 'bg-white/20'
+                    ? 'bg-amber-400'
+                    : 'bg-neutral-200'
                 }
               `}
             />
           );
         })}
         {total > 20 && (
-          <span className="text-xs text-white/40 ml-2">+{total - 20} more</span>
+          <span className="text-xs text-neutral-400 ml-2">+{total - 20} more</span>
         )}
         {isLoadingMore && (
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
-            className="w-2 h-2 rounded-full bg-amber-500/40 animate-pulse ml-1"
+            className="w-2 h-2 rounded-full bg-amber-300 animate-pulse ml-1"
           />
         )}
       </div>

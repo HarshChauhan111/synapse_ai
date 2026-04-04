@@ -103,7 +103,7 @@ function ChapterImageHero({ imagePrompt, accentColor, chapterIndex, layout }) {
 
         {/* Prompt text overlay */}
         <div className="relative z-10 text-center px-8 max-w-lg">
-          <p className="text-white/50 text-sm italic leading-relaxed">
+          <p className="text-neutral-600 text-sm italic leading-relaxed">
             "{imagePrompt}"
           </p>
         </div>
@@ -150,7 +150,7 @@ function ChapterImageHero({ imagePrompt, accentColor, chapterIndex, layout }) {
 
       {/* Source badge */}
       {imageLoaded && imageSource && (
-        <div className="absolute top-3 right-3 px-2 py-1 rounded-full text-[10px] font-medium bg-black/50 text-white/70 backdrop-blur-sm">
+        <div className="absolute top-3 right-3 px-2 py-1 rounded-full text-[10px] font-medium bg-white/90 text-neutral-700 backdrop-blur-sm shadow-sm border border-neutral-200">
           {imageSource === 'pexels' ? '📷 Pexels' : imageSource === 'wikipedia' ? '📚 Wikipedia' : '🎨 AI Generated'}
         </div>
       )}
@@ -160,7 +160,7 @@ function ChapterImageHero({ imagePrompt, accentColor, chapterIndex, layout }) {
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
-            background: `linear-gradient(to bottom, transparent 0%, ${accentColor}10 50%, rgba(10, 10, 15, 0.9) 100%)`,
+            background: `linear-gradient(to bottom, transparent 0%, ${accentColor}10 50%, rgba(255, 255, 255, 0.95) 100%)`,
           }}
         />
       )}

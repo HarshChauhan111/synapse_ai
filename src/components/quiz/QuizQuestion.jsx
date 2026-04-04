@@ -22,8 +22,8 @@ function QuizQuestion({
   if (!question) {
     return (
       <div className="w-full max-w-2xl mx-auto text-center py-12">
-        <Loader2 className="w-8 h-8 animate-spin text-accent-primary mx-auto mb-4" />
-        <p className="text-white/60">Loading question...</p>
+        <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-4" />
+        <p className="text-neutral-500">Loading question...</p>
       </div>
     );
   }
@@ -39,19 +39,19 @@ function QuizQuestion({
   const getOptionStyle = (option) => {
     if (!hasAnswered) {
       return selectedAnswer === option
-        ? 'border-accent-primary bg-accent-primary/20'
-        : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10';
+        ? 'border-blue-500 bg-blue-50'
+        : 'border-neutral-200 bg-white hover:border-neutral-300 hover:bg-neutral-50';
     }
 
     if (option === question.correctAnswer) {
-      return 'border-green-500 bg-green-500/20';
+      return 'border-green-500 bg-green-50';
     }
 
     if (option === selectedAnswer && option !== question.correctAnswer) {
-      return 'border-red-500 bg-red-500/20';
+      return 'border-red-500 bg-red-50';
     }
 
-    return 'border-white/10 bg-white/5 opacity-50';
+    return 'border-neutral-200 bg-neutral-50 opacity-50';
   };
 
   const questionVariants = {
@@ -76,20 +76,20 @@ function QuizQuestion({
           className={`
             inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium
             ${question.type === 'mcq'
-              ? 'bg-accent-primary/20 text-accent-primary'
-              : 'bg-amber-500/20 text-amber-400'
+              ? 'bg-blue-100 text-blue-700'
+              : 'bg-amber-100 text-amber-700'
             }
           `}
         >
           {question.type === 'mcq' ? 'Multiple Choice' : 'True / False'}
         </span>
-        <span className="text-xs text-white/40">
+        <span className="text-xs text-neutral-400">
           Q{question.questionNumber}
         </span>
       </div>
 
       {/* Question text */}
-      <h3 className="text-xl md:text-2xl font-heading font-bold text-white mb-8 leading-relaxed">
+      <h3 className="text-xl md:text-2xl font-heading font-bold text-neutral-900 mb-8 leading-relaxed">
         {question.question}
       </h3>
 
@@ -117,7 +117,7 @@ function QuizQuestion({
                     ? 'bg-green-500 text-white'
                     : hasAnswered && option === selectedAnswer
                       ? 'bg-red-500 text-white'
-                      : 'bg-white/10 text-white/70'
+                      : 'bg-neutral-100 text-neutral-600'
                   }
                 `}
               >
@@ -125,7 +125,7 @@ function QuizQuestion({
               </span>
 
               {/* Option text */}
-              <span className="flex-1 text-white">{option}</span>
+              <span className="flex-1 text-neutral-900">{option}</span>
 
               {/* Result icon */}
               {hasAnswered && option === question.correctAnswer && (
@@ -161,21 +161,21 @@ function QuizQuestion({
             className={`
               p-4 rounded-xl mb-8 flex items-start gap-3
               ${isCorrect
-                ? 'bg-green-500/10 border border-green-500/30'
-                : 'bg-red-500/10 border border-red-500/30'
+                ? 'bg-green-50 border border-green-200'
+                : 'bg-red-50 border border-red-200'
               }
             `}
           >
             <AlertCircle
-              className={`w-5 h-5 flex-shrink-0 mt-0.5 ${isCorrect ? 'text-green-500' : 'text-red-500'}`}
+              className={`w-5 h-5 flex-shrink-0 mt-0.5 ${isCorrect ? 'text-green-600' : 'text-red-600'}`}
             />
             <div>
               <p
-                className={`font-medium mb-1 ${isCorrect ? 'text-green-400' : 'text-red-400'}`}
+                className={`font-medium mb-1 ${isCorrect ? 'text-green-700' : 'text-red-700'}`}
               >
                 {isCorrect ? 'Correct!' : 'Not quite right'}
               </p>
-              <p className="text-sm text-white/70">{question.explanation}</p>
+              <p className="text-sm text-neutral-600">{question.explanation}</p>
             </div>
           </motion.div>
         )}

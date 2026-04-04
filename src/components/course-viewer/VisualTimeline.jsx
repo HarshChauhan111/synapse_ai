@@ -10,7 +10,7 @@ function VisualTimeline({
   events = [],
   title,
   description,
-  accentColor = '#6366f1',
+  accentColor = '#3b82f6',
   className = '',
   compact = false,
 }) {
@@ -48,13 +48,13 @@ function VisualTimeline({
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, margin: '-50px' }}
-      className={`glass-card p-6 rounded-2xl ${className}`}
+      className={`bg-white border border-neutral-200 p-6 rounded-2xl shadow-sm ${className}`}
     >
       {title && (
-        <h4 className="text-lg font-heading font-bold text-white mb-2">{title}</h4>
+        <h4 className="text-lg font-heading font-bold text-neutral-900 mb-2">{title}</h4>
       )}
       {description && (
-        <p className="text-sm text-white/60 mb-6">{description}</p>
+        <p className="text-sm text-neutral-500 mb-6">{description}</p>
       )}
 
       <div className="relative">
@@ -90,7 +90,7 @@ function VisualTimeline({
               </motion.div>
 
               {/* Content */}
-              <div className={compact ? '' : 'glass-card-dark p-4 rounded-xl'}>
+              <div className={compact ? '' : 'bg-neutral-50 border border-neutral-100 p-4 rounded-xl'}>
                 {event.year && (
                   <span 
                     className="text-xs font-medium px-2 py-0.5 rounded-full mb-2 inline-block"
@@ -99,9 +99,9 @@ function VisualTimeline({
                     {event.year}
                   </span>
                 )}
-                <h5 className="text-white font-medium mb-1">{event.title}</h5>
+                <h5 className="text-neutral-900 font-medium mb-1">{event.title}</h5>
                 {event.description && (
-                  <p className="text-sm text-white/60">{event.description}</p>
+                  <p className="text-sm text-neutral-500">{event.description}</p>
                 )}
               </div>
             </motion.div>

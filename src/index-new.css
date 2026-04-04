@@ -416,8 +416,37 @@ h1, h2, h3, h4, h5, h6 {
   border: 1px solid var(--border-color);
 }
 
+/* Section backgrounds */
+.section-white {
+  background: white;
+}
+
+.section-gray {
+  background: var(--bg-primary);
+}
+
+/* Divider */
+.divider {
+  height: 1px;
+  background: var(--border-color);
+  width: 100%;
+}
+
 /* Focus ring utility */
 .focus-ring:focus {
   outline: none;
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+}
+
+/* Prose dark mode override for chat - removed dark mode */
+.prose-chat {
+  color: var(--text-secondary);
+}
+
+.prose-chat h1, .prose-chat h2, .prose-chat h3 {
+  color: var(--text-primary);
+}
+
+.prose-chat a {
+  color: var(--accent-primary);
 }

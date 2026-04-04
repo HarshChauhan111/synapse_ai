@@ -79,7 +79,7 @@ function CoursePage() {
   return (
     <div
       className={`
-        min-h-screen bg-dark transition-all duration-300
+        min-h-screen bg-neutral-50 transition-all duration-300
         ${chatbot.isOpen ? 'lg:mr-[20vw] lg:min-w-0' : ''}
       `}
     >
@@ -157,7 +157,7 @@ function CoursePage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-dark/95 backdrop-blur-md overflow-y-auto"
+            className="fixed inset-0 z-50 bg-white/95 backdrop-blur-sm overflow-y-auto"
           >
             <div className="min-h-screen flex flex-col items-center justify-center py-12 px-4">
               {/* Header with close and finish buttons */}
@@ -165,7 +165,7 @@ function CoursePage() {
                 {!quiz.showResult && quiz.answeredCount > 0 && (
                   <button
                     onClick={quiz.finishQuiz}
-                    className="px-4 py-2 rounded-full bg-accent-primary/20 text-accent-primary hover:bg-accent-primary/30 transition-colors text-sm font-medium"
+                    className="px-4 py-2 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 transition-colors text-sm font-medium"
                   >
                     Finish Quiz ({quiz.answeredCount} answered)
                   </button>
@@ -179,7 +179,7 @@ function CoursePage() {
                       quiz.exitQuiz();
                     }
                   }}
-                  className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/20 transition-colors"
+                  className="w-10 h-10 rounded-full bg-neutral-100 flex items-center justify-center text-neutral-500 hover:text-neutral-900 hover:bg-neutral-200 transition-colors"
                   title={quiz.answeredCount > 0 && !quiz.showResult ? "View Results" : "Exit Quiz"}
                 >
                   ✕

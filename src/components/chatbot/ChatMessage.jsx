@@ -65,7 +65,7 @@ function ChatVisual({ visual }) {
             description={data.description}
             compact
             animate
-            className="mt-3 !p-4 !rounded-xl bg-white/[0.02] border border-white/[0.05]"
+            className="mt-3 !p-4 !rounded-xl bg-neutral-50 border border-neutral-200"
           />
         </motion.div>
       );
@@ -81,7 +81,7 @@ function ChatVisual({ visual }) {
             events={data.events}
             title={data.title}
             compact
-            className="mt-3 !p-4 !rounded-xl bg-white/[0.02] border border-white/[0.05]"
+            className="mt-3 !p-4 !rounded-xl bg-neutral-50 border border-neutral-200"
           />
         </motion.div>
       );
@@ -97,7 +97,7 @@ function ChatVisual({ visual }) {
             steps={data.steps}
             title={data.title}
             compact
-            className="mt-3 !p-4 !rounded-xl bg-white/[0.02] border border-white/[0.05]"
+            className="mt-3 !p-4 !rounded-xl bg-neutral-50 border border-neutral-200"
           />
         </motion.div>
       );
@@ -114,7 +114,7 @@ function ChatVisual({ visual }) {
             rows={data.rows}
             title={data.title}
             compact
-            className="mt-3 !p-4 !rounded-xl bg-white/[0.02] border border-white/[0.05]"
+            className="mt-3 !p-4 !rounded-xl bg-neutral-50 border border-neutral-200"
           />
         </motion.div>
       );
@@ -130,7 +130,7 @@ function ChatVisual({ visual }) {
             stats={data.stats}
             title={data.title}
             layout="row"
-            className="mt-3 !p-4 !rounded-xl bg-white/[0.02] border border-white/[0.05]"
+            className="mt-3 !p-4 !rounded-xl bg-neutral-50 border border-neutral-200"
           />
         </motion.div>
       );
@@ -141,7 +141,7 @@ function ChatVisual({ visual }) {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="mt-3 rounded-xl overflow-hidden bg-white/[0.02] animate-pulse h-32"
+            className="mt-3 rounded-xl overflow-hidden bg-neutral-100 animate-pulse h-32"
           />
         );
       }
@@ -150,9 +150,9 @@ function ChatVisual({ visual }) {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="mt-3 rounded-xl overflow-hidden bg-white/[0.02] h-32 flex items-center justify-center"
+            className="mt-3 rounded-xl overflow-hidden bg-neutral-100 h-32 flex items-center justify-center"
           >
-            <ImageOff className="w-8 h-8 text-white/20" />
+            <ImageOff className="w-8 h-8 text-neutral-300" />
           </motion.div>
         );
       }
@@ -170,7 +170,7 @@ function ChatVisual({ visual }) {
             onError={() => setImageError(true)}
           />
           {data.caption && (
-            <p className="text-xs text-white/50 mt-1.5 px-1">{data.caption}</p>
+            <p className="text-xs text-neutral-500 mt-1.5 px-1">{data.caption}</p>
           )}
         </motion.div>
       );
@@ -247,30 +247,30 @@ function ChatMessage({ message }) {
           ${isUser ? 'flex-row-reverse' : 'flex-row'}
         `}
       >
-        {/* Avatar - minimalist style */}
+        {/* Avatar */}
         <div
           className={`
             w-7 h-7 rounded-lg flex-shrink-0 flex items-center justify-center
             ${isUser
-              ? 'bg-white/10'
-              : 'bg-white/[0.03] border border-white/[0.08]'
+              ? 'bg-neutral-900'
+              : 'bg-blue-50 border border-blue-100'
             }
           `}
         >
           {isUser ? (
-            <User className="w-3.5 h-3.5 text-white/60" />
+            <User className="w-3.5 h-3.5 text-white" />
           ) : (
-            <Sparkles className="w-3.5 h-3.5 text-accent-primary/80" />
+            <Sparkles className="w-3.5 h-3.5 text-blue-600" />
           )}
         </div>
 
-        {/* Message bubble - minimalist style */}
+        {/* Message bubble */}
         <div
           className={`
-            px-4 py-3 rounded-2xl
+            px-4 py-3 rounded-2xl shadow-sm
             ${isUser
-              ? 'bg-white/10 text-white/90 rounded-tr-md'
-              : 'bg-white/[0.03] border border-white/[0.06] text-white/85 rounded-tl-md'
+              ? 'bg-neutral-900 text-white rounded-tr-md'
+              : 'bg-white border border-neutral-200 text-neutral-700 rounded-tl-md'
             }
           `}
         >
@@ -281,7 +281,7 @@ function ChatMessage({ message }) {
             </p>
           ) : (
             <>
-              <div className="text-sm leading-relaxed markdown-content prose prose-sm prose-invert max-w-none">
+              <div className="text-sm leading-relaxed markdown-content prose prose-sm max-w-none">
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>
                   {textContent || ''}
                 </ReactMarkdown>
@@ -296,7 +296,7 @@ function ChatMessage({ message }) {
           <p
             className={`
               text-[10px] mt-1.5
-              ${isUser ? 'text-white/40 text-right' : 'text-white/30'}
+              ${isUser ? 'text-white/50 text-right' : 'text-neutral-400'}
             `}
           >
             {formatTime(timestamp)}

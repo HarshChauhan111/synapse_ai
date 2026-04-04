@@ -51,7 +51,7 @@ function ChatbotPanel({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
+            className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 lg:hidden"
             onClick={onClose}
           />
 
@@ -61,19 +61,19 @@ function ChatbotPanel({
             initial="hidden"
             animate="visible"
             exit="exit"
-            className="fixed right-0 top-0 bottom-0 z-50 w-full sm:w-[420px] lg:w-[28vw] lg:min-w-[400px] lg:max-w-[520px] bg-[#0a0a0f]/95 backdrop-blur-xl border-l border-white/[0.06] flex flex-col"
+            className="fixed right-0 top-0 bottom-0 z-50 w-full sm:w-[420px] lg:w-[28vw] lg:min-w-[400px] lg:max-w-[520px] bg-white border-l border-neutral-200 flex flex-col shadow-xl"
           >
-            {/* Header - Minimalist */}
-            <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-200 bg-neutral-50">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-white/[0.04] border border-white/[0.08] flex items-center justify-center">
-                  <Sparkles className="w-4 h-4 text-accent-primary/70" />
+                <div className="w-8 h-8 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center">
+                  <Sparkles className="w-4 h-4 text-blue-600" />
                 </div>
                 <div>
-                  <h3 className="font-medium text-white/90 text-sm">
+                  <h3 className="font-medium text-neutral-900 text-sm">
                     AI Assistant
                   </h3>
-                  <p className="text-[11px] text-white/40 truncate max-w-[180px]">
+                  <p className="text-[11px] text-neutral-500 truncate max-w-[180px]">
                     {contextInfo.chapterTitle || 'Ready to help'}
                   </p>
                 </div>
@@ -100,7 +100,7 @@ function ChatbotPanel({
             </div>
 
             {/* Messages area */}
-            <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
+            <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4 bg-neutral-50">
               {/* Welcome message if no messages */}
               {messages.length === 0 && (
                 <motion.div
@@ -113,14 +113,14 @@ function ChatbotPanel({
                     initial={{ scale: 0.9 }}
                     animate={{ scale: 1 }}
                     transition={{ delay: 0.3, type: 'spring' }}
-                    className="w-14 h-14 mx-auto mb-5 rounded-2xl bg-white/[0.03] border border-white/[0.08] flex items-center justify-center"
+                    className="w-14 h-14 mx-auto mb-5 rounded-2xl bg-white border border-neutral-200 flex items-center justify-center shadow-sm"
                   >
                     <span className="text-2xl">✨</span>
                   </motion.div>
-                  <h4 className="font-medium text-white/90 mb-2">
+                  <h4 className="font-medium text-neutral-900 mb-2">
                     How can I help?
                   </h4>
-                  <p className="text-sm text-white/40 max-w-[280px] mx-auto leading-relaxed">
+                  <p className="text-sm text-neutral-500 max-w-[280px] mx-auto leading-relaxed">
                     Ask me anything about your course content. I can explain concepts, create visualizations, and help you learn.
                   </p>
                 </motion.div>
@@ -133,7 +133,7 @@ function ChatbotPanel({
                 ))}
               </AnimatePresence>
 
-              {/* Typing indicator - minimalist */}
+              {/* Typing indicator */}
               {isLoading && (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
@@ -142,10 +142,10 @@ function ChatbotPanel({
                   className="flex justify-start"
                 >
                   <div className="flex items-center gap-2.5">
-                    <div className="w-7 h-7 rounded-lg bg-white/[0.03] border border-white/[0.08] flex items-center justify-center">
-                      <Sparkles className="w-3.5 h-3.5 text-accent-primary/70" />
+                    <div className="w-7 h-7 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center">
+                      <Sparkles className="w-3.5 h-3.5 text-blue-600" />
                     </div>
-                    <div className="bg-white/[0.03] border border-white/[0.06] px-4 py-3 rounded-2xl rounded-tl-md">
+                    <div className="bg-white border border-neutral-200 px-4 py-3 rounded-2xl rounded-tl-md shadow-sm">
                       <div className="typing-indicator-minimal">
                         <span />
                         <span />
@@ -163,7 +163,7 @@ function ChatbotPanel({
                   animate={{ opacity: 1, y: 0 }}
                   className="text-center py-2"
                 >
-                  <p className="text-red-400/80 text-sm">{error}</p>
+                  <p className="text-red-500 text-sm">{error}</p>
                 </motion.div>
               )}
 

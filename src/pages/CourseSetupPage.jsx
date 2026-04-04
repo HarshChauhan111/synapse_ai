@@ -71,7 +71,7 @@ function CourseSetupPage() {
   };
 
   return (
-    <div className="min-h-screen gradient-mesh pt-24 pb-12 px-4">
+    <div className="min-h-screen bg-neutral-50 pt-24 pb-12 px-4">
       <div className="max-w-4xl mx-auto">
         {/* Step progress indicator */}
         <motion.div
@@ -102,7 +102,7 @@ function CourseSetupPage() {
                 <motion.p
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="text-center text-red-400 mt-4"
+                  className="text-center text-red-500 mt-4"
                 >
                   {structureError}
                 </motion.p>

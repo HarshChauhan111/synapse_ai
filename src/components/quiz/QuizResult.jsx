@@ -40,7 +40,7 @@ function QuizResult({ score, detailedResults, onContinue, onRetry }) {
       {/* Score header */}
       <motion.div
         variants={itemVariants}
-        className="text-center glass-card p-8 rounded-2xl"
+        className="text-center bg-white border border-neutral-200 shadow-lg p-8 rounded-2xl"
       >
         {/* Circular progress */}
         <div className="mb-6">
@@ -59,23 +59,23 @@ function QuizResult({ score, detailedResults, onContinue, onRetry }) {
           animate={{ scale: 1 }}
           transition={{ type: 'spring', delay: 0.5 }}
           className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-lg font-bold mb-4"
-          style={{ backgroundColor: `${color}20`, color }}
+          style={{ backgroundColor: `${color}15`, color }}
         >
           <span className="text-2xl">{emoji}</span>
           <span>{grade}</span>
         </motion.div>
 
         {/* Score text */}
-        <p className="text-white/70">
+        <p className="text-neutral-600">
           You answered{' '}
-          <span className="font-bold text-white">{correct}</span> out of{' '}
-          <span className="font-bold text-white">{total}</span> questions
+          <span className="font-bold text-neutral-900">{correct}</span> out of{' '}
+          <span className="font-bold text-neutral-900">{total}</span> questions
           correctly
         </p>
         
         {/* Additional stats for continuous quiz */}
         {totalQuestions && totalQuestions !== total && (
-          <p className="text-sm text-white/50 mt-2">
+          <p className="text-sm text-neutral-400 mt-2">
             {total} questions answered from {totalQuestions} loaded
           </p>
         )}
@@ -83,8 +83,8 @@ function QuizResult({ score, detailedResults, onContinue, onRetry }) {
 
       {/* Results breakdown */}
       <motion.div variants={itemVariants} className="space-y-4">
-        <h4 className="text-lg font-heading font-bold text-white flex items-center gap-2">
-          <BookOpen className="w-5 h-5 text-accent-primary" />
+        <h4 className="text-lg font-heading font-bold text-neutral-900 flex items-center gap-2">
+          <BookOpen className="w-5 h-5 text-blue-600" />
           Question Review ({detailedResults.length} answered)
         </h4>
 
@@ -98,8 +98,8 @@ function QuizResult({ score, detailedResults, onContinue, onRetry }) {
               className={`
                 p-4 rounded-xl border
                 ${result.isCorrect
-                  ? 'bg-green-500/5 border-green-500/20'
-                  : 'bg-red-500/5 border-red-500/20'
+                  ? 'bg-green-50 border-green-200'
+                  : 'bg-red-50 border-red-200'
                 }
               `}
             >
@@ -108,20 +108,20 @@ function QuizResult({ score, detailedResults, onContinue, onRetry }) {
                 <div
                   className={`
                     w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0
-                    ${result.isCorrect ? 'bg-green-500/20' : 'bg-red-500/20'}
+                    ${result.isCorrect ? 'bg-green-100' : 'bg-red-100'}
                   `}
                 >
                   {result.isCorrect ? (
-                    <CheckCircle className="w-4 h-4 text-green-500" />
+                    <CheckCircle className="w-4 h-4 text-green-600" />
                   ) : (
-                    <XCircle className="w-4 h-4 text-red-500" />
+                    <XCircle className="w-4 h-4 text-red-600" />
                   )}
                 </div>
 
                 {/* Question details */}
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm text-white/80 mb-2 line-clamp-2">
-                    <span className="text-white/50">Q{result.questionNumber}:</span>{' '}
+                  <p className="text-sm text-neutral-700 mb-2 line-clamp-2">
+                    <span className="text-neutral-400">Q{result.questionNumber}:</span>{' '}
                     {result.question}
                   </p>
 
@@ -131,8 +131,8 @@ function QuizResult({ score, detailedResults, onContinue, onRetry }) {
                         className={`
                           px-2 py-1 rounded
                           ${result.isCorrect
-                            ? 'bg-green-500/20 text-green-400'
-                            : 'bg-red-500/20 text-red-400'
+                            ? 'bg-green-100 text-green-700'
+                            : 'bg-red-100 text-red-700'
                           }
                         `}
                       >
@@ -140,7 +140,7 @@ function QuizResult({ score, detailedResults, onContinue, onRetry }) {
                       </span>
                     )}
                     {!result.isCorrect && (
-                      <span className="px-2 py-1 rounded bg-green-500/20 text-green-400">
+                      <span className="px-2 py-1 rounded bg-green-100 text-green-700">
                         Correct: {result.correctAnswer}
                       </span>
                     )}

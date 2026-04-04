@@ -12,7 +12,7 @@ const generateFallbackGradient = (courseTitle) => {
   }
   const hue1 = Math.abs(hash % 360);
   const hue2 = (hue1 + 40) % 360;
-  return `linear-gradient(135deg, hsl(${hue1}, 70%, 50%) 0%, hsl(${hue2}, 80%, 40%) 100%)`;
+  return `linear-gradient(135deg, hsl(${hue1}, 60%, 95%) 0%, hsl(${hue2}, 70%, 90%) 100%)`;
 };
 
 function CourseHero({
@@ -31,18 +31,18 @@ function CourseHero({
   const thumbnailUrl = thumbnailData?.url;
   const fallbackGradient = generateFallbackGradient(courseTitle);
 
-  // Difficulty colors
+  // Difficulty colors - white theme
   const difficultyColors = {
-    Beginner: 'bg-green-500/20 text-green-400 border-green-500/30',
-    Intermediate: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
-    Advanced: 'bg-red-500/20 text-red-400 border-red-500/30',
+    Beginner: 'bg-green-50 text-green-700 border-green-200',
+    Intermediate: 'bg-amber-50 text-amber-700 border-amber-200',
+    Advanced: 'bg-red-50 text-red-700 border-red-200',
   };
 
   return (
     <motion.section
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="relative min-h-[80vh] flex items-center justify-center overflow-hidden"
+      className="relative min-h-[80vh] flex items-center justify-center overflow-hidden bg-neutral-50"
     >
       {/* Background Image or Gradient */}
       <div className="absolute inset-0">
@@ -51,7 +51,7 @@ function CourseHero({
             {/* Blurred placeholder */}
             {!imageLoaded && (
               <div
-                className="absolute inset-0 skeleton"
+                className="absolute inset-0"
                 style={{ background: fallbackGradient }}
               />
             )}
@@ -78,9 +78,9 @@ function CourseHero({
           />
         )}
 
-        {/* Gradient overlays */}
-        <div className="absolute inset-0 bg-gradient-to-t from-dark via-dark/80 to-dark/40" />
-        <div className="absolute inset-0 bg-gradient-to-r from-dark/60 via-transparent to-dark/60" />
+        {/* Gradient overlays - white theme */}
+        <div className="absolute inset-0 bg-gradient-to-t from-white via-white/90 to-white/60" />
+        <div className="absolute inset-0 bg-gradient-to-r from-white/40 via-transparent to-white/40" />
       </div>
 
       {/* Content */}
@@ -101,7 +101,7 @@ function CourseHero({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="text-4xl md:text-5xl lg:text-6xl font-heading font-bold text-white mb-6"
+          className="text-4xl md:text-5xl lg:text-6xl font-heading font-bold text-neutral-900 mb-6"
         >
           {courseTitle}
         </motion.h1>
@@ -111,7 +111,7 @@ function CourseHero({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className="text-lg md:text-xl text-white/70 max-w-2xl mx-auto mb-8"
+          className="text-lg md:text-xl text-neutral-600 max-w-2xl mx-auto mb-8"
         >
           {courseDescription}
         </motion.p>
@@ -123,16 +123,16 @@ function CourseHero({
           transition={{ delay: 0.5 }}
           className="flex flex-wrap items-center justify-center gap-6 mb-10"
         >
-          <div className="flex items-center gap-2 text-white/60">
-            <BookOpen className="w-5 h-5 text-accent-primary" />
+          <div className="flex items-center gap-2 text-neutral-600">
+            <BookOpen className="w-5 h-5 text-blue-600" />
             <span>{selectedChapterCount} Chapters</span>
           </div>
-          <div className="flex items-center gap-2 text-white/60">
-            <Clock className="w-5 h-5 text-accent-secondary" />
+          <div className="flex items-center gap-2 text-neutral-600">
+            <Clock className="w-5 h-5 text-blue-600" />
             <span>{chapterDuration} per chapter</span>
           </div>
-          <div className="flex items-center gap-2 text-white/60">
-            <Users className="w-5 h-5 text-accent-tertiary" />
+          <div className="flex items-center gap-2 text-neutral-600">
+            <Users className="w-5 h-5 text-blue-600" />
             <span>{targetAudience}</span>
           </div>
         </motion.div>
@@ -145,7 +145,7 @@ function CourseHero({
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={onStartLearning}
-          className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl bg-gradient-to-r from-accent-primary to-accent-secondary text-white font-semibold text-lg shadow-lg shadow-accent-primary/30 pulse-glow"
+          className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl bg-blue-600 text-white font-semibold text-lg shadow-lg shadow-blue-600/20 hover:bg-blue-700 transition-colors"
         >
           Start Learning
           <ChevronDown className="w-5 h-5 animate-bounce" />
@@ -157,7 +157,7 @@ function CourseHero({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1 }}
-            className="mt-8 text-xs text-white/30"
+            className="mt-8 text-xs text-neutral-400"
           >
             Photo by{' '}
             {thumbnailData.photographerUrl ? (
@@ -165,7 +165,7 @@ function CourseHero({
                 href={thumbnailData.photographerUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="underline hover:text-white/50"
+                className="underline hover:text-neutral-600"
               >
                 {thumbnailData.photographer}
               </a>
@@ -187,12 +187,12 @@ function CourseHero({
         <motion.div
           animate={{ y: [0, 8, 0] }}
           transition={{ duration: 1.5, repeat: Infinity }}
-          className="w-6 h-10 rounded-full border-2 border-white/30 flex items-start justify-center p-2"
+          className="w-6 h-10 rounded-full border-2 border-neutral-300 flex items-start justify-center p-2"
         >
           <motion.div
             animate={{ opacity: [0.3, 1, 0.3], y: [0, 8, 0] }}
             transition={{ duration: 1.5, repeat: Infinity }}
-            className="w-1.5 h-1.5 rounded-full bg-white"
+            className="w-1.5 h-1.5 rounded-full bg-neutral-400"
           />
         </motion.div>
       </motion.div>

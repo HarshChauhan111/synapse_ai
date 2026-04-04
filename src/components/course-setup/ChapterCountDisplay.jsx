@@ -10,7 +10,7 @@ function ChapterCountDisplay({ courseData }) {
     reasoning,
   } = courseData;
 
-  // Difficulty badge colors
+  // Difficulty badge colors - white theme
   const difficultyColors = {
     Beginner: 'from-green-500 to-emerald-500',
     Intermediate: 'from-amber-500 to-orange-500',
@@ -18,9 +18,9 @@ function ChapterCountDisplay({ courseData }) {
   };
 
   const difficultyBg = {
-    Beginner: 'bg-green-500/10 border-green-500/30',
-    Intermediate: 'bg-amber-500/10 border-amber-500/30',
-    Advanced: 'bg-red-500/10 border-red-500/30',
+    Beginner: 'bg-green-50 border-green-200',
+    Intermediate: 'bg-amber-50 border-amber-200',
+    Advanced: 'bg-red-50 border-red-200',
   };
 
   const containerVariants = {
@@ -45,13 +45,13 @@ function ChapterCountDisplay({ courseData }) {
       animate="visible"
       className="w-full max-w-2xl mx-auto"
     >
-      <div className="glass-card p-6 md:p-8 rounded-2xl space-y-6">
+      <div className="bg-white border border-neutral-200 p-6 md:p-8 rounded-2xl shadow-sm space-y-6">
         {/* Course Description */}
         <motion.div variants={itemVariants} className="space-y-2">
-          <h3 className="text-xl md:text-2xl font-heading font-bold text-white">
+          <h3 className="text-xl md:text-2xl font-heading font-bold text-neutral-900">
             Course Overview
           </h3>
-          <p className="text-white/70 leading-relaxed">
+          <p className="text-neutral-600 leading-relaxed">
             {courseDescription}
           </p>
         </motion.div>
@@ -77,19 +77,19 @@ function ChapterCountDisplay({ courseData }) {
               <BarChart3 className="w-5 h-5 text-white" />
             </div>
             <div>
-              <p className="text-sm text-white/50">Difficulty</p>
-              <p className="font-medium text-white">{difficultyLevel}</p>
+              <p className="text-sm text-neutral-500">Difficulty</p>
+              <p className="font-medium text-neutral-900">{difficultyLevel}</p>
             </div>
           </div>
 
           {/* Target Audience */}
-          <div className="flex items-center gap-3 p-4 rounded-xl bg-white/5 border border-white/10">
-            <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-gradient-to-br from-accent-primary to-accent-secondary">
+          <div className="flex items-center gap-3 p-4 rounded-xl bg-neutral-50 border border-neutral-200">
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-blue-600">
               <Users className="w-5 h-5 text-white" />
             </div>
             <div>
-              <p className="text-sm text-white/50">Best For</p>
-              <p className="font-medium text-white">{targetAudience}</p>
+              <p className="text-sm text-neutral-500">Best For</p>
+              <p className="font-medium text-neutral-900">{targetAudience}</p>
             </div>
           </div>
         </motion.div>
@@ -97,16 +97,16 @@ function ChapterCountDisplay({ courseData }) {
         {/* AI Reasoning */}
         <motion.div
           variants={itemVariants}
-          className="flex items-start gap-3 p-4 rounded-xl bg-accent-primary/10 border border-accent-primary/30"
+          className="flex items-start gap-3 p-4 rounded-xl bg-blue-50 border border-blue-200"
         >
-          <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-accent-primary/20 flex-shrink-0">
-            <Lightbulb className="w-5 h-5 text-accent-primary" />
+          <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-blue-100 flex-shrink-0">
+            <Lightbulb className="w-5 h-5 text-blue-600" />
           </div>
           <div>
-            <p className="text-sm text-accent-primary font-medium mb-1">
+            <p className="text-sm text-blue-700 font-medium mb-1">
               AI Recommendation
             </p>
-            <p className="text-white/70 text-sm leading-relaxed">
+            <p className="text-neutral-600 text-sm leading-relaxed">
               {reasoning}
             </p>
           </div>
@@ -117,15 +117,15 @@ function ChapterCountDisplay({ courseData }) {
           variants={itemVariants}
           className="flex items-center gap-4"
         >
-          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-          <Target className="w-5 h-5 text-white/30" />
-          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-neutral-200 to-transparent" />
+          <Target className="w-5 h-5 text-neutral-300" />
+          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-neutral-200 to-transparent" />
         </motion.div>
 
         {/* Next step indicator */}
         <motion.p
           variants={itemVariants}
-          className="text-center text-white/50 text-sm"
+          className="text-center text-neutral-500 text-sm"
         >
           Select how many chapters you'd like below
         </motion.p>

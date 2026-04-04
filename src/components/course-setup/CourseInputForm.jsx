@@ -44,21 +44,21 @@ function CourseInputForm({ onSubmit, isLoading }) {
       onSubmit={handleSubmit}
       className="w-full max-w-2xl mx-auto"
     >
-      <div className="glass-card p-8 md:p-10 rounded-2xl space-y-8">
+      <div className="bg-white border border-neutral-200 p-8 md:p-10 rounded-2xl shadow-sm space-y-8">
         {/* Header */}
         <div className="text-center">
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: 'spring', delay: 0.2 }}
-            className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-accent-primary to-accent-tertiary flex items-center justify-center"
+            className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-blue-600 flex items-center justify-center"
           >
             <BookOpen className="w-8 h-8 text-white" />
           </motion.div>
-          <h2 className="text-2xl md:text-3xl font-heading font-bold text-white mb-2">
+          <h2 className="text-2xl md:text-3xl font-heading font-bold text-neutral-900 mb-2">
             Create Your Course
           </h2>
-          <p className="text-white/60">
+          <p className="text-neutral-500">
             Tell us what you want to learn, and AI will design the perfect curriculum
           </p>
         </div>
@@ -67,9 +67,9 @@ function CourseInputForm({ onSubmit, isLoading }) {
         <div className="space-y-2">
           <label
             htmlFor="courseTitle"
-            className="flex items-center gap-2 text-sm font-medium text-white/80"
+            className="flex items-center gap-2 text-sm font-medium text-neutral-700"
           >
-            <BookOpen className="w-4 h-4 text-accent-primary" />
+            <BookOpen className="w-4 h-4 text-blue-600" />
             Course Title
           </label>
           <motion.input
@@ -81,10 +81,10 @@ function CourseInputForm({ onSubmit, isLoading }) {
             placeholder="e.g., Machine Learning for Beginners"
             className={`
               w-full px-4 py-4 rounded-xl
-              bg-white/5 border
-              ${errors.courseTitle ? 'border-red-500' : 'border-white/10'}
-              text-white placeholder:text-white/30
-              focus:outline-none focus:border-accent-primary focus:ring-2 focus:ring-accent-primary/20
+              bg-neutral-50 border
+              ${errors.courseTitle ? 'border-red-500' : 'border-neutral-200'}
+              text-neutral-900 placeholder:text-neutral-400
+              focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:bg-white
               transition-all duration-200
             `}
             disabled={isLoading}
@@ -93,7 +93,7 @@ function CourseInputForm({ onSubmit, isLoading }) {
             <motion.p
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="text-red-400 text-sm"
+              className="text-red-500 text-sm"
             >
               {errors.courseTitle}
             </motion.p>
@@ -102,8 +102,8 @@ function CourseInputForm({ onSubmit, isLoading }) {
 
         {/* Duration Selection */}
         <div className="space-y-3">
-          <label className="flex items-center gap-2 text-sm font-medium text-white/80">
-            <Clock className="w-4 h-4 text-accent-primary" />
+          <label className="flex items-center gap-2 text-sm font-medium text-neutral-700">
+            <Clock className="w-4 h-4 text-blue-600" />
             Duration per Chapter
           </label>
           <div className="grid grid-cols-2 gap-3">
@@ -118,21 +118,21 @@ function CourseInputForm({ onSubmit, isLoading }) {
                 className={`
                   relative p-4 rounded-xl text-left transition-all duration-200
                   ${chapterDuration === option.value
-                    ? 'bg-accent-primary/20 border-2 border-accent-primary'
-                    : 'bg-white/5 border border-white/10 hover:border-white/20'
+                    ? 'bg-blue-50 border-2 border-blue-500'
+                    : 'bg-neutral-50 border border-neutral-200 hover:border-neutral-300'
                   }
                 `}
               >
-                <span className="block font-medium text-white">
+                <span className={`block font-medium ${chapterDuration === option.value ? 'text-blue-700' : 'text-neutral-900'}`}>
                   {option.label}
                 </span>
-                <span className="block text-sm text-white/50 mt-0.5">
+                <span className="block text-sm text-neutral-500 mt-0.5">
                   {option.description}
                 </span>
                 {chapterDuration === option.value && (
                   <motion.div
                     layoutId="duration-selected"
-                    className="absolute top-2 right-2 w-2 h-2 rounded-full bg-accent-primary"
+                    className="absolute top-2 right-2 w-2 h-2 rounded-full bg-blue-500"
                   />
                 )}
               </motion.button>
@@ -142,7 +142,7 @@ function CourseInputForm({ onSubmit, isLoading }) {
             <motion.p
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="text-red-400 text-sm"
+              className="text-red-500 text-sm"
             >
               {errors.chapterDuration}
             </motion.p>
@@ -154,7 +154,6 @@ function CourseInputForm({ onSubmit, isLoading }) {
           type="submit"
           size="lg"
           fullWidth
-          glow
           isLoading={isLoading}
           icon={Sparkles}
           iconPosition="right"
@@ -163,7 +162,7 @@ function CourseInputForm({ onSubmit, isLoading }) {
         </Button>
 
         {/* Hint text */}
-        <p className="text-center text-sm text-white/40">
+        <p className="text-center text-sm text-neutral-400">
           Our AI will analyze your topic and suggest an optimal course structure
         </p>
       </div>

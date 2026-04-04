@@ -10,7 +10,7 @@ function VisualProcessFlow({
   steps = [],
   title,
   description,
-  accentColor = '#6366f1',
+  accentColor = '#3b82f6',
   className = '',
   compact = false,
   direction = 'horizontal', // 'horizontal' or 'vertical'
@@ -53,13 +53,13 @@ function VisualProcessFlow({
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, margin: '-50px' }}
-      className={`glass-card p-6 rounded-2xl ${className}`}
+      className={`bg-white border border-neutral-200 p-6 rounded-2xl shadow-sm ${className}`}
     >
       {title && (
-        <h4 className="text-lg font-heading font-bold text-white mb-2">{title}</h4>
+        <h4 className="text-lg font-heading font-bold text-neutral-900 mb-2">{title}</h4>
       )}
       {description && (
-        <p className="text-sm text-white/60 mb-6">{description}</p>
+        <p className="text-sm text-neutral-500 mb-6">{description}</p>
       )}
 
       <div className={`
@@ -84,10 +84,10 @@ function VisualProcessFlow({
                 className={`
                   flex items-center justify-center rounded-xl font-bold
                   ${compact ? 'w-8 h-8 text-sm' : 'w-12 h-12 text-lg'}
-                  ${step.completed ? 'bg-green-500/20 text-green-400' : ''}
+                  ${step.completed ? 'bg-green-50 text-green-600' : ''}
                 `}
                 style={!step.completed ? { 
-                  backgroundColor: `${accentColor}20`, 
+                  backgroundColor: `${accentColor}15`, 
                   color: accentColor 
                 } : {}}
               >
@@ -100,11 +100,11 @@ function VisualProcessFlow({
 
               {/* Step content */}
               <div className={isVertical ? 'flex-1' : 'text-center mt-2'}>
-                <h5 className={`text-white font-medium ${compact ? 'text-sm' : ''}`}>
+                <h5 className={`text-neutral-900 font-medium ${compact ? 'text-sm' : ''}`}>
                   {step.title}
                 </h5>
                 {step.description && !compact && (
-                  <p className="text-xs text-white/50 mt-1 max-w-[150px]">
+                  <p className="text-xs text-neutral-500 mt-1 max-w-[150px]">
                     {step.description}
                   </p>
                 )}
@@ -122,7 +122,7 @@ function VisualProcessFlow({
               >
                 <ArrowRight 
                   className={`
-                    text-white/30
+                    text-neutral-300
                     ${isVertical ? 'rotate-90 w-4 h-4' : 'w-5 h-5'}
                   `}
                 />

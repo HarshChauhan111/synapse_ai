@@ -183,9 +183,49 @@ Generate comprehensive chapter content and return ONLY a valid JSON object in ex
   "chapterSummary": "A 2-3 sentence summary of what was covered"
 }
 
-SECTION VISUAL FIELD - Only include when the content GENUINELY BENEFITS from it:
+SECTION VISUAL FIELD - Include visuals when they GENUINELY ENHANCE understanding:
 
-For charts (use when discussing data, statistics, comparisons, percentages):
+SMART ANIMATION DECISION: Before adding any visual, analyze if the topic benefits from animation:
+- Animation is useful when: concept involves movement/change/transformation, step-by-step process, algorithm execution, system interactions, cause-effect relationships, or progression over time
+- Use static visuals (charts, tables, images) when: showing data, comparisons, or reference information
+
+AVAILABLE VISUAL TYPES:
+
+1. For INTERACTIVE ANIMATIONS (use when concept benefits from step-by-step visualization):
+{
+  "type": "animation",
+  "animation_required": true,
+  "animation_type": "process_flow" | "algorithm_stepper" | "timeline" | "comparison" | "system_flow" | "conceptual_transition",
+  "title": "Animation title",
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Step title",
+      "visual_state": "Current state description or array like [5,3,8,2]",
+      "highlight": [0, 1],  // indices to highlight (optional)
+      "explanation": "What's happening in this step"
+    }
+  ]
+}
+
+Animation type guidelines:
+- "process_flow": For workflows, procedures, cycles (e.g., software development lifecycle, photosynthesis)
+- "algorithm_stepper": For algorithm execution (e.g., sorting, searching, recursion)
+- "timeline": For chronological events (e.g., history, evolution of technology)
+- "comparison": For side-by-side analysis (e.g., programming languages, methodologies)
+- "system_flow": For interconnected systems (e.g., computer architecture, network protocols)
+- "conceptual_transition": For transformations (e.g., state changes, paradigm shifts)
+
+2. For SORTING ALGORITHMS specifically:
+{
+  "type": "algorithm",
+  "algorithm": "bubble" | "selection" | "insertion" | "quick" | "merge",
+  "title": "Algorithm name",
+  "description": "What to observe",
+  "initialArray": [5, 3, 8, 4, 2]
+}
+
+3. For charts (data, statistics, percentages):
 {
   "type": "chart",
   "chartType": "bar" | "line" | "pie" | "area" | "radar",
@@ -193,21 +233,21 @@ For charts (use when discussing data, statistics, comparisons, percentages):
   "data": [{ "name": "Label", "value": 42 }, ...]
 }
 
-For timeline (use when discussing history, evolution, chronological events):
+4. For timeline (history, chronological events):
 {
   "type": "timeline",
   "title": "Timeline title",
   "events": [{ "year": "2020", "title": "Event", "description": "Brief description" }, ...]
 }
 
-For process flow (use when explaining step-by-step procedures, workflows, cycles):
+5. For process flow (step-by-step procedures):
 {
   "type": "process",
   "title": "Process title",
   "steps": [{ "title": "Step 1", "description": "What happens" }, ...]
 }
 
-For comparison table (use when comparing features, options, pros/cons):
+6. For comparison table (features, pros/cons):
 {
   "type": "table",
   "title": "Comparison title",
@@ -215,14 +255,14 @@ For comparison table (use when comparing features, options, pros/cons):
   "rows": [["Speed", "Fast", "Slow"], ["Cost", "$10", "$20"]]
 }
 
-For infographic stats (use when highlighting key numbers, metrics, facts):
+7. For infographic stats (key numbers, metrics):
 {
   "type": "infographic",
   "title": "Key Stats",
   "stats": [{ "label": "Users", "value": "10M", "icon": "users" }, ...]
 }
 
-For image (use when a real-world photo would help understanding):
+8. For image (real-world photos):
 {
   "type": "image",
   "searchQuery": "specific search term for photo",
@@ -238,10 +278,12 @@ If heroType is "chart" instead of "image", use this format for heroChartData:
 }
 
 CRITICAL RULES:
+- **PRIORITIZE ANIMATIONS**: If a topic involves process, change, or steps, use "animation" type with appropriate animation_type
+- When teaching sorting algorithms, ALWAYS use "algorithm" type for interactive sorting visualization
+- When explaining processes (like compilation, HTTP request, cell division), use "animation" with "process_flow" or "system_flow"
+- When showing evolution/history, consider "animation" with "timeline" type for engagement
 - Most sections should have "visual": null - only add visuals when they genuinely enhance understanding
-- Typically 1-2 sections per chapter should have visuals, NOT every section
-- Choose the right visual type based on content (don't force charts on non-data content)
-- heroType should be "chart" when data/statistics are central, otherwise use "image"
+- Typically 1-2 sections per chapter should have visuals with at least one being an animation if topic allows
 - accentColor must be unique - use colors like #6366f1 (indigo), #8b5cf6 (violet), #ec4899 (pink), #10b981 (emerald), #f59e0b (amber), #3b82f6 (blue), #ef4444 (red), #06b6d4 (cyan)
 - sections should have 4-6 sections with rich educational content appropriate for ${chapterDuration}
 - All markdown in body fields must be valid
@@ -509,9 +551,45 @@ For "algorithm" type (INTERACTIVE SORTING ALGORITHM ANIMATION - use when explain
   }
 }
 
+For "animation" type (INTERACTIVE STEP-BY-STEP ANIMATION - use when concept benefits from animated visualization):
+{
+  "type": "animation",
+  "data": {
+    "animation_required": true,
+    "animation_type": "process_flow" | "algorithm_stepper" | "timeline" | "comparison" | "system_flow" | "conceptual_transition",
+    "title": "Animation title",
+    "steps": [
+      {
+        "step_number": 1,
+        "title": "Step title",
+        "visual_state": "Current state (text or array)",
+        "highlight": [0, 1],
+        "explanation": "What's happening"
+      }
+    ]
+  }
+}
+
+SMART ANIMATION DECISION: Use animation when:
+- Concept involves movement, change, or transformation
+- There's a step-by-step process to visualize
+- Algorithm execution needs demonstration
+- System interactions or data flow is being explained
+- Cause-effect relationships need clarity
+
+Animation types:
+- "process_flow": Workflows, procedures, lifecycles
+- "algorithm_stepper": Algorithm execution visualization
+- "timeline": Chronological event progression
+- "comparison": Side-by-side animated analysis
+- "system_flow": Interconnected system visualization
+- "conceptual_transition": State changes, transformations
+
 RULES:
-- Include visual only when it genuinely helps (comparisons, data, processes, timelines, sorting algorithms)
-- **IMPORTANT**: When user asks about sorting algorithms (bubble sort, selection sort, insertion sort, quick sort, merge sort, or any sorting algorithm in any programming language like C++, Java, Python), ALWAYS include the "algorithm" visual type to show an interactive animation
+- **PRIORITIZE ANIMATIONS**: If topic involves process, steps, or change, use "animation" type
+- When user asks about sorting algorithms, ALWAYS use "algorithm" type for sorting visualization
+- When explaining ANY process (compilation, HTTP request, recursion, etc.), consider "animation" type
+- Include visual only when it genuinely helps understanding
 - Keep text response under 150 words unless detailed explanation truly needed
 - Use markdown in text field for formatting
 - If no visual needed, set visual to null

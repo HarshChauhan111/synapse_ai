@@ -17,7 +17,7 @@ function ChapterPagination({
       initial={{ y: 100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ delay: 0.5 }}
-      className="fixed bottom-0 left-0 right-0 z-40 glass-card border-t border-white/10"
+      className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-neutral-200 shadow-lg"
     >
       <div className="max-w-4xl mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
@@ -31,8 +31,8 @@ function ChapterPagination({
               w-10 h-10 rounded-full flex items-center justify-center
               transition-all duration-200
               ${canGoBack && !isGenerating
-                ? 'bg-white/10 hover:bg-white/20 text-white'
-                : 'bg-white/5 text-white/30 cursor-not-allowed'
+                ? 'bg-neutral-100 hover:bg-neutral-200 text-neutral-700'
+                : 'bg-neutral-50 text-neutral-300 cursor-not-allowed'
               }
             `}
             aria-label="Previous chapter"
@@ -69,10 +69,10 @@ function ChapterPagination({
                     className={`
                       absolute inset-0 rounded-full transition-all duration-300
                       ${isCurrent
-                        ? 'bg-gradient-to-br from-accent-primary to-accent-secondary'
+                        ? 'bg-blue-600'
                         : isVisited
-                          ? 'bg-accent-primary/30 border border-accent-primary/50'
-                          : 'bg-white/10 border border-white/20'
+                          ? 'bg-blue-100 border border-blue-300'
+                          : 'bg-neutral-100 border border-neutral-200'
                       }
                     `}
                   />
@@ -88,19 +88,19 @@ function ChapterPagination({
                         duration: 2,
                         repeat: Infinity,
                       }}
-                      className="absolute inset-0 rounded-full bg-accent-primary"
+                      className="absolute inset-0 rounded-full bg-blue-600"
                     />
                   )}
 
                   {/* Content */}
                   <span className="absolute inset-0 flex items-center justify-center">
                     {isVisited && !isCurrent ? (
-                      <Check className="w-3 h-3 text-accent-primary" />
+                      <Check className="w-3 h-3 text-blue-600" />
                     ) : (
                       <span
                         className={`
                           text-xs font-medium
-                          ${isCurrent ? 'text-white' : 'text-white/60'}
+                          ${isCurrent ? 'text-white' : 'text-neutral-500'}
                         `}
                       >
                         {index + 1}
@@ -122,8 +122,8 @@ function ChapterPagination({
               w-10 h-10 rounded-full flex items-center justify-center
               transition-all duration-200
               ${canGoForward && !isGenerating
-                ? 'bg-white/10 hover:bg-white/20 text-white'
-                : 'bg-white/5 text-white/30 cursor-not-allowed'
+                ? 'bg-neutral-100 hover:bg-neutral-200 text-neutral-700'
+                : 'bg-neutral-50 text-neutral-300 cursor-not-allowed'
               }
             `}
             aria-label="Next chapter"
@@ -134,7 +134,7 @@ function ChapterPagination({
 
         {/* Chapter info */}
         <div className="text-center mt-2">
-          <p className="text-sm text-white/50">
+          <p className="text-sm text-neutral-500">
             Chapter {currentChapter + 1} of {totalChapters}
           </p>
         </div>

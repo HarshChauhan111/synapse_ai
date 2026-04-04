@@ -54,10 +54,10 @@ function ChapterSelector({
     >
       {/* Section header */}
       <motion.div variants={itemVariants} className="text-center">
-        <h3 className="text-xl font-heading font-bold text-white mb-2">
+        <h3 className="text-xl font-heading font-bold text-neutral-900 mb-2">
           Choose Your Journey
         </h3>
-        <p className="text-white/60 text-sm">
+        <p className="text-neutral-500 text-sm">
           Select the number of chapters for your course
         </p>
       </motion.div>
@@ -79,8 +79,8 @@ function ChapterSelector({
               className={`
                 relative p-6 rounded-2xl text-center transition-all duration-300
                 ${isSelected
-                  ? 'bg-gradient-to-br from-accent-primary to-accent-secondary shadow-lg shadow-accent-primary/20'
-                  : 'glass-card hover:border-white/20'
+                  ? 'bg-blue-600 shadow-lg shadow-blue-600/20'
+                  : 'bg-white border border-neutral-200 hover:border-neutral-300 shadow-sm'
                 }
               `}
             >
@@ -100,7 +100,7 @@ function ChapterSelector({
               <div
                 className={`
                   text-4xl font-heading font-bold mb-2
-                  ${isSelected ? 'text-white' : 'text-gradient'}
+                  ${isSelected ? 'text-white' : 'text-blue-600'}
                 `}
               >
                 {count}
@@ -110,7 +110,7 @@ function ChapterSelector({
               <div
                 className={`
                   text-sm font-medium mb-1
-                  ${isSelected ? 'text-white/90' : 'text-white'}
+                  ${isSelected ? 'text-white/90' : 'text-neutral-900'}
                 `}
               >
                 Chapters
@@ -120,7 +120,7 @@ function ChapterSelector({
               <div
                 className={`
                   text-xs
-                  ${isSelected ? 'text-white/70' : 'text-white/50'}
+                  ${isSelected ? 'text-white/70' : 'text-neutral-500'}
                 `}
               >
                 {getChapterDescription(count)}
@@ -145,19 +145,19 @@ function ChapterSelector({
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="glass-card p-6 rounded-2xl"
+          className="bg-white border border-neutral-200 p-6 rounded-2xl shadow-sm"
         >
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             {/* Selection summary */}
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-accent-primary/20 flex items-center justify-center">
-                <BookMarked className="w-6 h-6 text-accent-primary" />
+              <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center">
+                <BookMarked className="w-6 h-6 text-blue-600" />
               </div>
               <div>
-                <p className="text-white font-medium">
+                <p className="text-neutral-900 font-medium">
                   {selectedCount} Chapter Course
                 </p>
-                <p className="text-white/50 text-sm">
+                <p className="text-neutral-500 text-sm">
                   {getEstimatedTime(selectedCount, '30')} of learning
                 </p>
               </div>
@@ -167,7 +167,6 @@ function ChapterSelector({
             <Button
               onClick={onConfirm}
               size="lg"
-              glow
               isLoading={isLoading}
               icon={ArrowRight}
               iconPosition="right"
@@ -182,7 +181,7 @@ function ChapterSelector({
       {!selectedCount && (
         <motion.p
           variants={itemVariants}
-          className="text-center text-white/40 text-sm"
+          className="text-center text-neutral-400 text-sm"
         >
           Click on a chapter count to select it
         </motion.p>

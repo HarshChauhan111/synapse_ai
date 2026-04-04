@@ -17,43 +17,41 @@ function Button({
   icon: Icon,
   iconPosition = 'left',
   fullWidth = false,
-  glow = false,
   className = '',
   onClick,
   type = 'button',
   ...props
 }) {
-  // Variant styles
+  // Variant styles - Clean white theme
   const variantClasses = {
     primary: `
-      bg-gradient-to-r from-accent-primary to-accent-secondary
-      text-white font-medium
-      hover:from-accent-secondary hover:to-accent-tertiary
-      disabled:from-gray-600 disabled:to-gray-600
+      bg-blue-600 text-white font-medium
+      hover:bg-blue-700
+      disabled:bg-neutral-300 disabled:text-neutral-500
+      shadow-sm hover:shadow-md
     `,
     secondary: `
-      bg-white/10 border border-white/20
-      text-white font-medium
-      hover:bg-white/20 hover:border-white/30
-      disabled:bg-white/5 disabled:border-white/10 disabled:text-white/40
+      bg-white border border-neutral-200
+      text-neutral-700 font-medium
+      hover:bg-neutral-50 hover:border-neutral-300
+      disabled:bg-neutral-100 disabled:text-neutral-400
     `,
     ghost: `
       bg-transparent
-      text-white/80 font-medium
-      hover:bg-white/10 hover:text-white
-      disabled:text-white/30
+      text-neutral-600 font-medium
+      hover:bg-neutral-100 hover:text-neutral-900
+      disabled:text-neutral-300
     `,
     outline: `
-      bg-transparent border-2 border-accent-primary
-      text-accent-primary font-medium
-      hover:bg-accent-primary/10
-      disabled:border-white/20 disabled:text-white/40
+      bg-transparent border-2 border-blue-600
+      text-blue-600 font-medium
+      hover:bg-blue-50
+      disabled:border-neutral-300 disabled:text-neutral-400
     `,
     danger: `
-      bg-gradient-to-r from-red-500 to-rose-500
-      text-white font-medium
-      hover:from-red-600 hover:to-rose-600
-      disabled:from-gray-600 disabled:to-gray-600
+      bg-red-500 text-white font-medium
+      hover:bg-red-600
+      disabled:bg-neutral-300 disabled:text-neutral-500
     `,
   };
 
@@ -90,7 +88,6 @@ function Button({
         ${variantClasses[variant]}
         ${sizeClasses[size]}
         ${fullWidth ? 'w-full' : ''}
-        ${glow && !isDisabled ? 'pulse-glow' : ''}
         ${isDisabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}
         ${className}
       `}
@@ -127,21 +124,6 @@ function Button({
           <Icon className={iconSizes[size]} />
         )}
       </span>
-
-      {/* Glow background (for glow variant) */}
-      {glow && !isDisabled && (
-        <motion.span
-          className="absolute inset-0 rounded-xl bg-accent-primary opacity-0 blur-xl -z-10"
-          animate={{
-            opacity: [0.3, 0.5, 0.3],
-          }}
-          transition={{
-            duration: 2,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
-        />
-      )}
     </motion.button>
   );
 }
@@ -168,9 +150,9 @@ export function IconButton({
   };
 
   const variantClasses = {
-    ghost: 'hover:bg-white/10 text-white/70 hover:text-white',
-    secondary: 'bg-white/10 hover:bg-white/20 text-white',
-    primary: 'bg-accent-primary hover:bg-accent-secondary text-white',
+    ghost: 'hover:bg-neutral-100 text-neutral-500 hover:text-neutral-900',
+    secondary: 'bg-neutral-100 hover:bg-neutral-200 text-neutral-700',
+    primary: 'bg-blue-600 hover:bg-blue-700 text-white',
   };
 
   return (

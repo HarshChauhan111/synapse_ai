@@ -28,11 +28,11 @@ function ChapterPage({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="min-h-screen flex items-center justify-center py-20"
+        className="min-h-screen flex items-center justify-center py-20 bg-neutral-50"
       >
         <div className="text-center space-y-6">
           <LoadingSpinner type="chapter" size="lg" />
-          <p className="text-white/60">
+          <p className="text-neutral-500">
             Generating Chapter {chapterIndex + 1} content...
           </p>
         </div>
@@ -48,16 +48,16 @@ function ChapterPage({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="min-h-screen flex items-center justify-center py-20"
+        className="min-h-screen flex items-center justify-center py-20 bg-neutral-50"
       >
-        <div className="glass-card p-8 rounded-2xl text-center max-w-md">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-500/20 flex items-center justify-center">
+        <div className="bg-white border border-neutral-200 p-8 rounded-2xl text-center max-w-md shadow-sm">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-50 flex items-center justify-center">
             <span className="text-3xl">😕</span>
           </div>
-          <h3 className="text-xl font-heading font-bold text-white mb-2">
+          <h3 className="text-xl font-heading font-bold text-neutral-900 mb-2">
             Oops! Something went wrong
           </h3>
-          <p className="text-white/60 mb-6">{error}</p>
+          <p className="text-neutral-500 mb-6">{error}</p>
           <Button
             onClick={onRetry}
             icon={RefreshCw}
@@ -78,10 +78,10 @@ function ChapterPage({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="min-h-screen flex items-center justify-center py-20"
+        className="min-h-screen flex items-center justify-center py-20 bg-neutral-50"
       >
         <div className="text-center">
-          <p className="text-white/60">No chapter content available</p>
+          <p className="text-neutral-500">No chapter content available</p>
         </div>
       </motion.div>
     );
@@ -96,7 +96,7 @@ function ChapterPage({
         animate="animate"
         exit="exit"
         transition={{ duration: 0.5 }}
-        className="pb-24" // Space for pagination bar
+        className="pb-24 bg-white" // Space for pagination bar
       >
         {/* Chapter Hero */}
         <ChapterHero

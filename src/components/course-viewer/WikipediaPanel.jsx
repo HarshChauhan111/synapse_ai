@@ -40,7 +40,7 @@ function WikipediaPanel({ topic, accentColor }) {
 
   if (loading) {
     return (
-      <div className="my-6 rounded-xl bg-white/5 h-20 animate-pulse" />
+      <div className="my-6 rounded-xl bg-neutral-100 h-20 animate-pulse" />
     );
   }
 
@@ -56,40 +56,35 @@ function WikipediaPanel({ topic, accentColor }) {
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      className="my-6 rounded-xl overflow-hidden"
-      style={{
-        backgroundColor: `${accentColor}08`,
-        borderColor: `${accentColor}25`,
-        borderWidth: 1,
-      }}
+      className="my-6 rounded-xl overflow-hidden bg-white border border-neutral-200 shadow-sm"
     >
       {/* Header - always visible */}
       <button
         onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center gap-3 p-4 text-left transition-colors hover:bg-white/5"
+        className="w-full flex items-center gap-3 p-4 text-left transition-colors hover:bg-neutral-50"
       >
         <div
           className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
-          style={{ backgroundColor: `${accentColor}20` }}
+          style={{ backgroundColor: `${accentColor}15` }}
         >
           <Globe className="w-4 h-4" style={{ color: accentColor }} />
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-white/10 text-white/60">
+            <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-neutral-100 text-neutral-600">
               Wikipedia
             </span>
-            <h5 className="text-sm font-semibold text-white truncate">
+            <h5 className="text-sm font-semibold text-neutral-900 truncate">
               {data.title}
             </h5>
           </div>
           {!expanded && (
-            <p className="text-xs text-white/50 mt-1 line-clamp-1">
+            <p className="text-xs text-neutral-500 mt-1 line-clamp-1">
               {shortExtract}
             </p>
           )}
         </div>
-        <div className="flex-shrink-0 text-white/40">
+        <div className="flex-shrink-0 text-neutral-400">
           {expanded ? (
             <ChevronUp className="w-4 h-4" />
           ) : (
@@ -108,7 +103,7 @@ function WikipediaPanel({ topic, accentColor }) {
             transition={{ duration: 0.3, ease: 'easeInOut' }}
             className="overflow-hidden"
           >
-            <div className="px-4 pb-4 space-y-4">
+            <div className="px-4 pb-4 space-y-4 border-t border-neutral-100 pt-4">
               {/* Image + text layout */}
               <div className={`flex gap-4 ${data.thumbnail ? 'flex-row' : ''}`}>
                 {data.thumbnail && (
@@ -121,7 +116,7 @@ function WikipediaPanel({ topic, accentColor }) {
                     />
                   </div>
                 )}
-                <p className="text-sm text-white/70 leading-relaxed flex-1">
+                <p className="text-sm text-neutral-600 leading-relaxed flex-1">
                   {data.extract}
                 </p>
               </div>
@@ -135,7 +130,7 @@ function WikipediaPanel({ topic, accentColor }) {
                   className="inline-flex items-center gap-2 text-xs font-medium transition-colors px-3 py-1.5 rounded-full"
                   style={{
                     color: accentColor,
-                    backgroundColor: `${accentColor}15`,
+                    backgroundColor: `${accentColor}10`,
                   }}
                 >
                   <BookOpen className="w-3 h-3" />

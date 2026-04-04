@@ -7,8 +7,8 @@ import {
 } from 'recharts';
 
 const DEFAULT_COLORS = [
-  '#6366f1', '#8b5cf6', '#ec4899', '#10b981', '#f59e0b',
-  '#3b82f6', '#ef4444', '#06b6d4', '#84cc16', '#f97316'
+  '#3b82f6', '#8b5cf6', '#ec4899', '#10b981', '#f59e0b',
+  '#6366f1', '#ef4444', '#06b6d4', '#84cc16', '#f97316'
 ];
 
 /**
@@ -19,7 +19,7 @@ function VisualChart({
   data = [],
   title,
   description,
-  accentColor = '#6366f1',
+  accentColor = '#3b82f6',
   height = 300,
   animate = true,
   className = '',
@@ -37,9 +37,9 @@ function VisualChart({
   // Don't render if no valid data
   if (normalizedData.length === 0) {
     return (
-      <div className={`glass-card p-6 rounded-2xl ${className}`}>
-        {title && <h4 className="text-lg font-heading font-bold text-white mb-2">{title}</h4>}
-        <p className="text-white/50 text-sm">No chart data available</p>
+      <div className={`bg-white border border-neutral-200 p-6 rounded-2xl shadow-sm ${className}`}>
+        {title && <h4 className="text-lg font-heading font-bold text-neutral-900 mb-2">{title}</h4>}
+        <p className="text-neutral-400 text-sm">No chart data available</p>
       </div>
     );
   }
@@ -58,9 +58,9 @@ function VisualChart({
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length && payload[0]?.value !== undefined) {
       return (
-        <div className="glass-card p-3 text-sm">
-          <p className="text-white font-medium">{label || payload[0]?.name || ''}</p>
-          <p className="text-accent-primary">
+        <div className="bg-white border border-neutral-200 p-3 text-sm rounded-lg shadow-lg">
+          <p className="text-neutral-900 font-medium">{label || payload[0]?.name || ''}</p>
+          <p className="text-blue-600">
             {typeof payload[0].value === 'number' ? payload[0].value.toLocaleString() : payload[0].value}
           </p>
         </div>
@@ -77,9 +77,9 @@ function VisualChart({
         return (
           <ResponsiveContainer width="100%" height={chartHeight}>
             <BarChart data={normalizedData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-              <XAxis dataKey="name" stroke="rgba(255,255,255,0.5)" fontSize={12} />
-              <YAxis stroke="rgba(255,255,255,0.5)" fontSize={12} />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.08)" />
+              <XAxis dataKey="name" stroke="rgba(0,0,0,0.5)" fontSize={12} />
+              <YAxis stroke="rgba(0,0,0,0.5)" fontSize={12} />
               <Tooltip content={<CustomTooltip />} />
               <Bar
                 dataKey="value"
@@ -98,9 +98,9 @@ function VisualChart({
         return (
           <ResponsiveContainer width="100%" height={chartHeight}>
             <LineChart data={normalizedData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-              <XAxis dataKey="name" stroke="rgba(255,255,255,0.5)" fontSize={12} />
-              <YAxis stroke="rgba(255,255,255,0.5)" fontSize={12} />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.08)" />
+              <XAxis dataKey="name" stroke="rgba(0,0,0,0.5)" fontSize={12} />
+              <YAxis stroke="rgba(0,0,0,0.5)" fontSize={12} />
               <Tooltip content={<CustomTooltip />} />
               <Line
                 type="monotone"
@@ -129,7 +129,7 @@ function VisualChart({
                 dataKey="value"
                 animationDuration={animate ? 1000 : 0}
                 label={!compact ? ({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%` : false}
-                labelLine={!compact ? { stroke: 'rgba(255,255,255,0.3)' } : false}
+                labelLine={!compact ? { stroke: 'rgba(0,0,0,0.3)' } : false}
               >
                 {normalizedData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={colors[index]} />
@@ -144,15 +144,15 @@ function VisualChart({
         return (
           <ResponsiveContainer width="100%" height={chartHeight}>
             <AreaChart data={normalizedData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-              <XAxis dataKey="name" stroke="rgba(255,255,255,0.5)" fontSize={12} />
-              <YAxis stroke="rgba(255,255,255,0.5)" fontSize={12} />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.08)" />
+              <XAxis dataKey="name" stroke="rgba(0,0,0,0.5)" fontSize={12} />
+              <YAxis stroke="rgba(0,0,0,0.5)" fontSize={12} />
               <Tooltip content={<CustomTooltip />} />
               <Area
                 type="monotone"
                 dataKey="value"
                 stroke={accentColor}
-                fill={`${accentColor}40`}
+                fill={`${accentColor}20`}
                 strokeWidth={2}
                 animationDuration={animate ? 1200 : 0}
               />
@@ -164,13 +164,13 @@ function VisualChart({
         return (
           <ResponsiveContainer width="100%" height={chartHeight}>
             <RadarChart data={normalizedData}>
-              <PolarGrid stroke="rgba(255,255,255,0.2)" />
-              <PolarAngleAxis dataKey="name" stroke="rgba(255,255,255,0.5)" fontSize={12} />
-              <PolarRadiusAxis stroke="rgba(255,255,255,0.3)" fontSize={10} />
+              <PolarGrid stroke="rgba(0,0,0,0.15)" />
+              <PolarAngleAxis dataKey="name" stroke="rgba(0,0,0,0.5)" fontSize={12} />
+              <PolarRadiusAxis stroke="rgba(0,0,0,0.3)" fontSize={10} />
               <Radar
                 dataKey="value"
                 stroke={accentColor}
-                fill={`${accentColor}40`}
+                fill={`${accentColor}30`}
                 fillOpacity={0.6}
                 animationDuration={animate ? 1000 : 0}
               />
@@ -190,13 +190,13 @@ function VisualChart({
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true }}
-      className={`glass-card p-6 rounded-2xl ${className}`}
+      className={`bg-white border border-neutral-200 p-6 rounded-2xl shadow-sm ${className}`}
     >
       {title && (
-        <h4 className="text-lg font-heading font-bold text-white mb-2">{title}</h4>
+        <h4 className="text-lg font-heading font-bold text-neutral-900 mb-2">{title}</h4>
       )}
       {description && (
-        <p className="text-sm text-white/60 mb-4">{description}</p>
+        <p className="text-sm text-neutral-500 mb-4">{description}</p>
       )}
       {renderChart()}
       
@@ -209,7 +209,7 @@ function VisualChart({
                 className="w-2.5 h-2.5 rounded-full" 
                 style={{ backgroundColor: colors[index] }}
               />
-              <span className="text-white/70">{item.name}</span>
+              <span className="text-neutral-600">{item.name}</span>
             </div>
           ))}
         </div>

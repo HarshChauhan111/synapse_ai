@@ -7,7 +7,7 @@ function ProgressBar({
   showLabel = true,
   showPercentage = true,
   size = 'md',
-  color = 'accent-primary',
+  color = 'blue',
   animated = true,
   className = '',
 }) {
@@ -21,12 +21,11 @@ function ProgressBar({
   };
 
   const colorClasses = {
-    'accent-primary': 'from-accent-primary to-accent-secondary',
-    'accent-secondary': 'from-accent-secondary to-accent-tertiary',
-    'accent-tertiary': 'from-accent-tertiary to-accent-primary',
-    green: 'from-green-500 to-emerald-400',
-    red: 'from-red-500 to-rose-400',
-    amber: 'from-amber-500 to-yellow-400',
+    'blue': 'from-blue-600 to-blue-500',
+    'green': 'from-green-500 to-emerald-400',
+    'red': 'from-red-500 to-rose-400',
+    'amber': 'from-amber-500 to-yellow-400',
+    'indigo': 'from-indigo-600 to-indigo-500',
   };
 
   return (
@@ -34,11 +33,11 @@ function ProgressBar({
       {/* Label */}
       {showLabel && (
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm text-white/60">
+          <span className="text-sm text-neutral-500">
             {progress} of {total}
           </span>
           {showPercentage && (
-            <span className="text-sm font-medium text-white/80">
+            <span className="text-sm font-medium text-neutral-700">
               {percentage}%
             </span>
           )}
@@ -47,7 +46,7 @@ function ProgressBar({
 
       {/* Progress bar container */}
       <div
-        className={`w-full ${sizeClasses[size]} bg-white/10 rounded-full overflow-hidden`}
+        className={`w-full ${sizeClasses[size]} bg-neutral-200 rounded-full overflow-hidden`}
       >
         {/* Progress fill */}
         <motion.div
@@ -58,7 +57,7 @@ function ProgressBar({
               ? { duration: 0.5, ease: 'easeOut' }
               : { duration: 0 }
           }
-          className={`h-full bg-gradient-to-r ${colorClasses[color]} rounded-full relative`}
+          className={`h-full bg-gradient-to-r ${colorClasses[color] || colorClasses.blue} rounded-full relative`}
         >
           {/* Shimmer effect */}
           {animated && percentage > 0 && percentage < 100 && (
@@ -85,7 +84,7 @@ export function CircularProgress({
   total,
   size = 100,
   strokeWidth = 8,
-  color = '#6366f1',
+  color = '#3b82f6',
   showPercentage = true,
   animated = true,
 }) {
@@ -103,7 +102,7 @@ export function CircularProgress({
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="rgba(255, 255, 255, 0.1)"
+          stroke="#e5e5e5"
           strokeWidth={strokeWidth}
         />
         
@@ -136,7 +135,7 @@ export function CircularProgress({
           initial={animated ? { opacity: 0, scale: 0.5 } : false}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.3 }}
-          className="absolute text-white font-heading font-bold"
+          className="absolute text-neutral-900 font-heading font-bold"
           style={{ fontSize: size * 0.2 }}
         >
           {percentage}%
@@ -168,10 +167,10 @@ export function StepProgress({
               className={`
                 relative flex items-center justify-center w-8 h-8 rounded-full
                 ${isCompleted
-                  ? 'bg-accent-primary text-white'
+                  ? 'bg-blue-600 text-white'
                   : isCurrent
-                    ? 'bg-accent-primary/20 border-2 border-accent-primary text-accent-primary'
-                    : 'bg-white/10 text-white/40'
+                    ? 'bg-blue-50 border-2 border-blue-600 text-blue-600'
+                    : 'bg-neutral-100 text-neutral-400'
                 }
               `}
             >
@@ -197,20 +196,20 @@ export function StepProgress({
                 <motion.div
                   animate={{ scale: [1, 1.5, 1], opacity: [0.5, 0, 0.5] }}
                   transition={{ duration: 2, repeat: Infinity }}
-                  className="absolute inset-0 rounded-full border-2 border-accent-primary"
+                  className="absolute inset-0 rounded-full border-2 border-blue-600"
                 />
               )}
             </motion.div>
             
             {/* Connector line */}
             {index < steps.length - 1 && (
-              <div className="flex-1 h-0.5 bg-white/10 relative overflow-hidden">
+              <div className="flex-1 h-0.5 bg-neutral-200 relative overflow-hidden">
                 {isCompleted && (
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: '100%' }}
                     transition={{ duration: 0.5 }}
-                    className="absolute inset-0 bg-accent-primary"
+                    className="absolute inset-0 bg-blue-600"
                   />
                 )}
               </div>

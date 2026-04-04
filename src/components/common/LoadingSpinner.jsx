@@ -41,27 +41,27 @@ const LOADING_TYPES = {
   default: {
     icon: Loader2,
     text: 'Loading...',
-    color: 'accent-primary',
+    color: 'blue-600',
   },
   analyzing: {
     icon: Brain,
     text: 'Analyzing your course topic...',
-    color: 'accent-secondary',
+    color: 'indigo-600',
   },
   generating: {
     icon: Sparkles,
     text: 'Generating content...',
-    color: 'accent-tertiary',
+    color: 'blue-500',
   },
   chapter: {
     icon: BookOpen,
     text: 'Loading chapter content...',
-    color: 'accent-primary',
+    color: 'blue-600',
   },
   quiz: {
     icon: FileQuestion,
     text: 'Generating adaptive quiz...',
-    color: 'accent-secondary',
+    color: 'indigo-600',
   },
 };
 
@@ -119,7 +119,7 @@ function LoadingSpinner({
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className={`${sizeConfig.text} text-white/70 text-center font-medium`}
+          className={`${sizeConfig.text} text-neutral-600 text-center font-medium`}
         >
           {displayText}
         </motion.p>
@@ -150,8 +150,8 @@ function LoadingSpinner({
 
   if (fullScreen) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center gradient-mesh">
-        <div className="glass-card p-12 rounded-2xl">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-50">
+        <div className="bg-white p-12 rounded-2xl shadow-lg border border-neutral-200">
           {content}
         </div>
       </div>
