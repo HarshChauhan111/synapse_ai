@@ -152,6 +152,102 @@ Important: difficultyLevel must be exactly one of: "Beginner", "Intermediate", o
 };
 
 /**
+ * Extract a suggested course title from PDF content
+ */
+export const extractCourseTitleFromPdf = async (pdfContent) => {
+  // Use first 5000 chars to get context for title
+  const truncatedContent = pdfContent.substring(0, 5000);
+  
+  const prompt = `Analyze this PDF content and suggest a concise, descriptive course title (3-8 words).
+
+PDF CONTENT:
+---
+${truncatedContent}
+---
+
+Return ONLY the title text, nothing else. No quotes, no explanation.
+Example good titles: "Machine Learning Fundamentals", "Python Web Development", "Financial Analysis Basics"`;
+
+  try {
+    const model = getModel();
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const title = response.text().trim().replace(/^["']|["']$/g, '');
+    return title || 'Untitled Course';
+  } catch (error) {
+    console.error('Error extracting title from PDF:', error);
+    return null; // Return null so we can fall back to filename
+  }
+};
+
+/**
+ * Generate course structure from PDF content
+ */
+export const generateCourseStructureFromPdf = async (title, duration, pdfContent, customPrompt = '') => {
+  // Truncate PDF content if too long (keep first 30000 chars for context)
+  const truncatedContent = pdfContent.length > 30000 
+    ? pdfContent.substring(0, 30000) + '\n\n[Content truncated...]' 
+    : pdfContent;
+  
+  const customInstructions = customPrompt 
+    ? `\n\nUSER'S CUSTOM INSTRUCTIONS:\n${customPrompt}\n` 
+    : '';
+  
+  const prompt = `You are a professional curriculum designer. Analyze the following PDF document content and create a structured course.
+
+Course Title: "${title}"
+Duration per Chapter: "${duration}"
+${customInstructions}
+PDF DOCUMENT CONTENT:
+---
+${truncatedContent}
+---
+
+Based on the PDF content above, create a course structure. Extract the main topics, concepts, and organize them into a logical learning progression.
+
+Return ONLY a valid JSON object (no markdown, no explanation) in exactly this format:
+{
+  "suggestedChapters": [3, 5, 7, 10],
+  "recommendedChapters": 5,
+  "reasoning": "Brief explanation of how you organized the PDF content into chapters",
+  "courseDescription": "A 2-sentence overview based on the PDF content",
+  "difficultyLevel": "Beginner",
+  "targetAudience": "Short description of ideal learner based on the document complexity"
+}
+
+Important: 
+- difficultyLevel must be exactly one of: "Beginner", "Intermediate", or "Advanced"
+- Base everything on the actual PDF content provided
+- Organize topics in a logical learning order`;
+
+  return withRetry(async () => {
+    const model = getModel();
+    
+    try {
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      const text = response.text();
+      console.log('PDF course structure response:', text);
+      return parseGeminiJSON(text);
+    } catch (error) {
+      console.error('Error generating course structure from PDF:', error);
+      const errorMessage = error?.message || error?.toString() || 'Unknown error';
+      
+      if (errorMessage.includes('API key') || errorMessage.includes('API_KEY')) {
+        throw new Error('Invalid API key. Please check your Gemini API key.');
+      }
+      if (errorMessage.includes('quota') || errorMessage.includes('rate') || errorMessage.includes('429')) {
+        throw new Error('API quota exceeded. Please wait a moment and try again.');
+      }
+      if (errorMessage.includes('blocked') || errorMessage.includes('safety')) {
+        throw new Error('Content was blocked by safety filters. The PDF may contain restricted content.');
+      }
+      throw new Error(`Failed to generate course structure from PDF: ${errorMessage}`);
+    }
+  });
+};
+
+/**
  * Generate content for a specific chapter
  */
 export const generateChapterContent = async (courseTitle, chapterNumber, totalChapters, chapterDuration) => {
@@ -269,6 +365,170 @@ CRITICAL RULES:
         throw new Error(`Content blocked for chapter ${chapterNumber}. Try a different topic.`);
       }
       throw new Error(`Failed to generate chapter ${chapterNumber} content. Please try again.`);
+    }
+  });
+};
+
+/**
+ * Generate content for a specific chapter using PDF source material
+ */
+export const generateChapterContentFromPdf = async (courseTitle, chapterNumber, totalChapters, chapterDuration, pdfContent, customPrompt = '') => {
+  // Get relevant portion of PDF content for this chapter
+  // Divide content roughly by chapters to give context
+  const contentLength = pdfContent.length;
+  const chunkSize = Math.min(15000, Math.ceil(contentLength / totalChapters));
+  const startPos = Math.floor((chapterNumber - 1) * chunkSize);
+  const endPos = Math.min(startPos + chunkSize * 2, contentLength); // Overlap for context
+  
+  // Get relevant chunk plus some context from beginning
+  const relevantContent = pdfContent.substring(0, 5000) + '\n\n[...]\n\n' + 
+    pdfContent.substring(startPos, endPos);
+  
+  const truncatedContent = relevantContent.length > 25000 
+    ? relevantContent.substring(0, 25000) + '\n\n[Content truncated...]' 
+    : relevantContent;
+
+  const customInstructions = customPrompt 
+    ? `\n\nUSER'S CUSTOM INSTRUCTIONS:\n${customPrompt}\n` 
+    : '';
+
+  const prompt = `You are an expert educator and content designer. Create chapter content based on the source PDF material.
+
+Course: "${courseTitle}"
+Chapter: ${chapterNumber} of ${totalChapters}
+Duration: ${chapterDuration}
+${customInstructions}
+SOURCE PDF CONTENT (focus on content relevant to chapter ${chapterNumber}/${totalChapters}):
+---
+${truncatedContent}
+---
+
+Based on the PDF content above, generate comprehensive chapter content. Extract and explain the relevant concepts, topics, and information from the source material.
+
+Return ONLY a valid JSON object in exactly this format:
+
+{
+  "chapterTitle": "Chapter title based on PDF content for this section",
+  "chapterSubtitle": "One engaging subtitle line",
+  "heroType": "image",
+  "heroImagePrompt": "A detailed Pollinations image prompt (vivid, specific, educational). Example: futuristic digital classroom with holographic displays showing neural networks, purple and blue lighting, cyberpunk aesthetic",
+  "heroChartData": null,
+  "accentColor": "#hexcolor (a unique color that fits this chapter's mood)",
+  "sections": [
+    {
+      "heading": "Section heading from PDF content",
+      "body": "Rich markdown content — use **bold**, *italics*, bullet lists, code blocks, blockquotes, etc. Base this on the actual PDF content. Make it comprehensive and educational.",
+      "hasCallout": true,
+      "calloutText": "Key insight or important note from the PDF",
+      "visual": null
+    }
+  ],
+  "keyTakeaways": ["Takeaway 1 from PDF", "Takeaway 2 from PDF", "Takeaway 3 from PDF"],
+  "chapterSummary": "A 2-3 sentence summary based on the PDF content covered"
+}
+
+SECTION VISUAL FIELD - Include visuals when they GENUINELY ENHANCE understanding:
+
+SMART ANIMATION DECISION: Before adding any visual, analyze if the topic benefits from animation:
+- Animation is useful when: concept involves movement/change/transformation, step-by-step process, algorithm execution, system interactions, cause-effect relationships, or progression over time
+- Use static visuals (charts, tables, images) when: showing data, comparisons, or reference information
+
+AVAILABLE VISUAL TYPES:
+
+1. For INTERACTIVE ANIMATIONS (use when concept benefits from step-by-step visualization):
+{
+  "type": "animation",
+  "animation_required": true,
+  "animation_type": "process_flow" | "algorithm_stepper" | "timeline" | "comparison" | "system_flow" | "conceptual_transition",
+  "title": "Animation title",
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "Step title",
+      "visual_state": "Current state description or array like [5,3,8,2]",
+      "highlight": [0, 1],
+      "explanation": "What's happening in this step"
+    }
+  ]
+}
+
+2. For charts (data, statistics, percentages):
+{
+  "type": "chart",
+  "chartType": "bar" | "line" | "pie" | "area" | "radar",
+  "title": "Chart title",
+  "data": [{ "name": "Label", "value": 42 }, ...]
+}
+
+3. For timeline (history, chronological events):
+{
+  "type": "timeline",
+  "title": "Timeline title",
+  "events": [{ "year": "2020", "title": "Event", "description": "Brief description" }, ...]
+}
+
+4. For process flow (step-by-step procedures):
+{
+  "type": "process",
+  "title": "Process title",
+  "steps": [{ "title": "Step 1", "description": "What happens" }, ...]
+}
+
+5. For comparison table (features, pros/cons):
+{
+  "type": "table",
+  "title": "Comparison title",
+  "columns": ["Feature", "Option A", "Option B"],
+  "rows": [["Speed", "Fast", "Slow"], ["Cost", "$10", "$20"]]
+}
+
+6. For infographic stats (key numbers, metrics):
+{
+  "type": "infographic",
+  "title": "Key Stats",
+  "stats": [{ "label": "Users", "value": "10M", "icon": "users" }, ...]
+}
+
+7. For image (real-world photos):
+{
+  "type": "image",
+  "searchQuery": "specific search term for photo",
+  "caption": "What this image shows"
+}
+
+CRITICAL RULES:
+- **BASE ALL CONTENT ON THE PDF** - Extract real information, don't make things up
+- If the PDF contains code examples, include them in code blocks
+- If the PDF has diagrams described, try to recreate them as visuals
+- Most sections should have "visual": null - only add visuals when they genuinely enhance understanding
+- Typically 1-2 sections per chapter should have visuals
+- accentColor must be unique - use colors like #6366f1 (indigo), #8b5cf6 (violet), #ec4899 (pink), #10b981 (emerald), #f59e0b (amber), #3b82f6 (blue), #ef4444 (red), #06b6d4 (cyan)
+- sections should have 4-6 sections with rich educational content appropriate for ${chapterDuration}
+- All markdown in body fields must be valid
+- Make content progressively build on previous chapters`;
+
+  return withRetry(async () => {
+    const model = getModel();
+    try {
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      const text = response.text();
+      console.log(`Chapter ${chapterNumber} (PDF-based) raw response length:`, text?.length || 0);
+      return parseGeminiJSON(text);
+    } catch (error) {
+      console.error(`Error generating chapter ${chapterNumber} content from PDF:`, error);
+      const errorMessage = error?.message || error?.toString() || 'Unknown error';
+      
+      if (errorMessage.includes('API key') || errorMessage.includes('API_KEY')) {
+        throw new Error('Invalid API key. Please check your Gemini API key.');
+      }
+      if (errorMessage.includes('quota') || errorMessage.includes('rate') || errorMessage.includes('429')) {
+        throw new Error(`API quota exceeded for chapter ${chapterNumber}. Please wait and try again.`);
+      }
+      if (errorMessage.includes('blocked') || errorMessage.includes('safety')) {
+        throw new Error(`Content blocked for chapter ${chapterNumber}. The PDF may contain restricted content.`);
+      }
+      throw new Error(`Failed to generate chapter ${chapterNumber} content from PDF. Please try again.`);
     }
   });
 };

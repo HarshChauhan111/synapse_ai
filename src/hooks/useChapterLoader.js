@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { generateChapterContent } from '../api/gemini';
+import { generateChapterContent, generateChapterContentFromPdf } from '../api/gemini';
 import { useCourse } from '../context/CourseContext';
 
 /**
@@ -17,6 +17,9 @@ export function useChapterLoader() {
     setGenerating,
     setError,
     isGenerating,
+    sourceType,
+    sourcePdfContent,
+    customPrompt,
   } = useCourse();
 
   const [chapterLoading, setChapterLoading] = useState(false);
@@ -42,13 +45,37 @@ export function useChapterLoader() {
     setLoadError(null);
     setGenerating(true);
 
+    // Debug logging
+    console.log('Loading chapter with:', {
+      sourceType,
+      hasPdfContent: !!sourcePdfContent,
+      pdfContentLength: sourcePdfContent?.length || 0,
+      customPrompt: customPrompt || 'none'
+    });
+
     try {
-      const chapterData = await generateChapterContent(
-        courseTitle,
-        chapterIndex + 1, // 1-indexed for display
-        selectedChapterCount,
-        chapterDuration
-      );
+      let chapterData;
+      
+      // Use PDF-based generation if we have PDF content
+      if (sourceType === 'pdf' && sourcePdfContent) {
+        console.log('Generating chapter from PDF content...');
+        chapterData = await generateChapterContentFromPdf(
+          courseTitle,
+          chapterIndex + 1,
+          selectedChapterCount,
+          chapterDuration,
+          sourcePdfContent,
+          customPrompt
+        );
+      } else {
+        console.log('Generating chapter from topic (no PDF content)');
+        chapterData = await generateChapterContent(
+          courseTitle,
+          chapterIndex + 1, // 1-indexed for display
+          selectedChapterCount,
+          chapterDuration
+        );
+      }
 
       addGeneratedChapter(chapterIndex, chapterData);
       markChapterVisited(chapterIndex);
@@ -75,6 +102,9 @@ export function useChapterLoader() {
     setError,
     isGenerating,
     chapterLoading,
+    sourceType,
+    sourcePdfContent,
+    customPrompt,
   ]);
 
   /**

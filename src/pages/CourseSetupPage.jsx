@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import CourseInputForm from '../components/course-setup/CourseInputForm';
@@ -24,6 +24,11 @@ function CourseSetupPage() {
     difficultyLevel,
     targetAudience,
     reasoning,
+
+    thumbnailData,
+    setCourseId,
+    resetCourse,
+
   } = useCourse();
 
   const {
@@ -33,10 +38,15 @@ function CourseSetupPage() {
     structureError,
   } = useCourseGenerator();
 
+  // Reset course state when component mounts (starting a new course)
+  useEffect(() => {
+    resetCourse();
+  }, [resetCourse]);
+
   // Step 1: Handle course input form submission
-  const handleFormSubmit = async (title, duration) => {
+  const handleFormSubmit = async (title, duration, options = {}) => {
     try {
-      await generateStructure(title, duration);
+      await generateStructure(title, duration, options);
       setCurrentStep(1);
     } catch (error) {
       console.error('Failed to generate structure:', error);

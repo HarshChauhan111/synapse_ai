@@ -49,13 +49,45 @@ export function useCourseGenerator() {
   /**
    * Step 1: Generate course structure from title and duration
    */
-  const generateStructure = useCallback(async (title, duration) => {
+  const generateStructure = useCallback(async (title, duration, options = {}) => {
     setStructureLoading(true);
     setStructureError(null);
     setCourseMeta(title, duration);
 
+    // Debug: Log what we're storing
+    console.log('generateStructure called with options:', {
+      sourceType: options.sourceType,
+      hasSourceText: !!options.sourceText,
+      sourceTextLength: options.sourceText?.length || 0,
+      customPrompt: options.customPrompt || 'none'
+    });
+
+    // Store source info if provided (including PDF content for chapter generation)
+    if (options.sourceType) {
+      setSourceInfo?.(
+        options.sourceType, 
+        options.sourcePdfNames || [], 
+        options.sourceText || '',
+        options.customPrompt || ''
+      );
+    }
+
     try {
-      const structure = await generateCourseStructure(title, duration);
+      let structure;
+      
+      if (options.sourceType === 'pdf' && options.sourceText) {
+        // Generate from PDF content
+        structure = await generateCourseStructureFromPdf(
+          title, 
+          duration, 
+          options.sourceText,
+          options.customPrompt
+        );
+      } else {
+        // Generate from topic
+        structure = await generateCourseStructure(title, duration);
+      }
+      
       setCourseStructure({
         courseDescription: structure.courseDescription,
         difficultyLevel: structure.difficultyLevel,
@@ -77,7 +109,7 @@ export function useCourseGenerator() {
     } finally {
       setStructureLoading(false);
     }
-  }, [setCourseMeta, setCourseStructure, setError, fetchThumbnailAsync]);
+  }, [setCourseMeta, setCourseStructure, setError, fetchThumbnailAsync, setSourceInfo]);
 
   /**
    * Retry structure generation
