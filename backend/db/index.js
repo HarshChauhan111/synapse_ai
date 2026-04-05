@@ -1,14 +1,10 @@
 const { Pool } = require('pg');
 
-// Create connection pool
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  // Or use individual params if DATABASE_URL not set
-  host: process.env.DB_HOST || 'localhost',
-  port: process.env.DB_PORT || 5432,
-  database: process.env.DB_NAME || 'synapse_ai',
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
+  ssl: {
+    rejectUnauthorized: false,
+  },
   max: 20,
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 2000,
@@ -16,7 +12,7 @@ const pool = new Pool({
 
 // Test connection
 pool.on('connect', () => {
-  console.log('📦 Connected to PostgreSQL database');
+  console.log('📦 Connected to PostgreSQL (Neon)');
 });
 
 pool.on('error', (err) => {
@@ -24,10 +20,7 @@ pool.on('error', (err) => {
   process.exit(-1);
 });
 
-// Query helper
 const query = (text, params) => pool.query(text, params);
-
-// Transaction helper
 const getClient = () => pool.connect();
 
 module.exports = {
