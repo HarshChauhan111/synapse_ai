@@ -3,10 +3,10 @@ import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
   BookOpen, Clock, ChevronRight, Plus, Trash2, 
-  GraduationCap, Trophy, TrendingUp, Loader2 
+  GraduationCap, Trophy, TrendingUp, Loader2, Globe
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { courseAPI, quizAPI } from '../api/backend';
+import { courseAPI, marketplaceAPI, quizAPI } from '../api/backend';
 import Navbar from '../components/common/Navbar';
 
 function MyCoursesPage() {
@@ -17,6 +17,7 @@ function MyCoursesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
+  const [publishingId, setPublishingId] = useState(null);
 
   useEffect(() => {
     loadData();
@@ -60,6 +61,33 @@ function MyCoursesPage() {
   const handleContinueCourse = (course) => {
     // Navigate to course page with course data
     navigate(`/course/${course.id}`);
+  };
+
+  const handleTogglePublic = async (courseId, isPublic, e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    try {
+      setPublishingId(courseId);
+
+      if (isPublic) {
+        await marketplaceAPI.unpublishCourse(courseId);
+      } else {
+        await marketplaceAPI.publishCourse(courseId);
+      }
+
+      setCourses(prev =>
+        prev.map(course =>
+          course.id === courseId
+            ? { ...course, isPublic: !isPublic }
+            : course
+        )
+      );
+    } catch (err) {
+      alert(`Failed to ${isPublic ? 'unpublish' : 'publish'} course: ${err.message}`);
+    } finally {
+      setPublishingId(null);
+    }
   };
 
   if (loading) {
@@ -147,6 +175,8 @@ function MyCoursesPage() {
                 onContinue={() => handleContinueCourse(course)}
                 onDelete={(e) => handleDelete(course.id, e)}
                 isDeleting={deletingId === course.id}
+                onTogglePublic={(e) => handleTogglePublic(course.id, course.isPublic, e)}
+                isPublishing={publishingId === course.id}
               />
             ))}
           </div>
@@ -181,7 +211,7 @@ function StatsCard({ icon: Icon, label, value, color }) {
 }
 
 // Course Card Component
-function CourseCard({ course, index, onContinue, onDelete, isDeleting }) {
+function CourseCard({ course, index, onContinue, onDelete, isDeleting, onTogglePublic, isPublishing }) {
   const progressPercentage = course.progressPercentage || 0;
 
   return (
@@ -229,6 +259,18 @@ function CourseCard({ course, index, onContinue, onDelete, isDeleting }) {
 
       {/* Content */}
       <div className="p-5">
+        <div className="mb-2">
+          <span
+            className={`inline-flex items-center px-2.5 py-1 text-xs font-medium rounded-full ${
+              course.isPublic
+                ? 'bg-green-100 text-green-700'
+                : 'bg-neutral-100 text-neutral-600'
+            }`}
+          >
+            {course.isPublic ? 'Public' : 'Private'}
+          </span>
+        </div>
+
         <h3 className="font-semibold text-lg text-neutral-900 line-clamp-2 mb-2 group-hover:text-[#1DA1F2] transition-colors">
           {course.title}
         </h3>
@@ -264,6 +306,26 @@ function CourseCard({ course, index, onContinue, onDelete, isDeleting }) {
         <button className="w-full py-2.5 flex items-center justify-center gap-2 text-[#1DA1F2] font-medium border border-[#1DA1F2]/20 rounded-xl hover:bg-[#1DA1F2]/5 transition-colors">
           {course.completed ? 'Review Course' : 'Continue Learning'}
           <ChevronRight className="w-4 h-4" />
+        </button>
+
+        {/* Marketplace visibility toggle */}
+        <button
+          onClick={onTogglePublic}
+          disabled={isPublishing}
+          className={`mt-2 w-full py-2.5 flex items-center justify-center gap-2 font-medium border rounded-xl transition-colors ${
+            course.isPublic
+              ? 'text-green-700 border-green-200 bg-green-50 hover:bg-green-100'
+              : 'text-neutral-700 border-neutral-200 hover:bg-neutral-50'
+          } disabled:opacity-60 disabled:cursor-not-allowed`}
+        >
+          {isPublishing ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <Globe className="w-4 h-4" />
+          )}
+          {isPublishing
+            ? 'Updating...'
+            : (course.isPublic ? 'Public on Marketplace' : 'Make Public')}
         </button>
       </div>
     </motion.div>

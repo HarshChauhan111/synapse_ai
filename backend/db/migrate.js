@@ -8,12 +8,24 @@ const fs = require('fs');
 const path = require('path');
 const { Pool } = require('pg');
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false,
-  },
-});
+const connectionString = process.env.DATABASE_URL?.trim();
+
+const pool = new Pool(
+  connectionString
+    ? {
+        connectionString,
+        ssl: connectionString.includes('sslmode=require')
+          ? { rejectUnauthorized: false }
+          : undefined,
+      }
+    : {
+        host: process.env.DB_HOST || 'localhost',
+        port: Number(process.env.DB_PORT || 5432),
+        database: process.env.DB_NAME || 'synapse_ai',
+        user: process.env.DB_USER || '',
+        password: String(process.env.DB_PASSWORD || ''),
+      }
+);
 async function migrate() {
   console.log('🔄 Starting database migration...');
   

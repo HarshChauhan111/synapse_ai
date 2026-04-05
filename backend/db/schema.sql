@@ -17,6 +17,11 @@ CREATE TABLE IF NOT EXISTS users (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Backward compatibility for older databases created before profile columns existed
+ALTER TABLE users ADD COLUMN IF NOT EXISTS username VARCHAR(100);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS bio TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url TEXT;
+
 -- Create index on email for faster lookups
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
@@ -107,6 +112,7 @@ CREATE TRIGGER update_courses_updated_at
   EXECUTE FUNCTION update_updated_at_column();
 
 -- View for course summary with progress
+DROP VIEW IF EXISTS course_summary CASCADE;
 CREATE OR REPLACE VIEW course_summary AS
 SELECT 
   c.id,
@@ -189,6 +195,7 @@ CREATE INDEX IF NOT EXISTS idx_course_saves_user ON course_saves(user_id);
 CREATE INDEX IF NOT EXISTS idx_course_saves_course ON course_saves(course_id);
 
 -- View for marketplace courses (public courses with creator info)
+DROP VIEW IF EXISTS marketplace_courses CASCADE;
 CREATE OR REPLACE VIEW marketplace_courses AS
 SELECT 
   c.id,

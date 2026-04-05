@@ -267,6 +267,7 @@ function formatCourseSummary(row) {
     chaptersCompleted: row.chapters_completed || 0,
     progressPercentage: parseFloat(row.progress_percentage) || 0,
     completed: row.completed || false,
+    isPublic: row.is_public || false,
     lastAccessedAt: row.last_accessed_at,
     createdAt: row.created_at
   };

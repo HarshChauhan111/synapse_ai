@@ -4,16 +4,50 @@ import {
   ArrowLeft, Eye, Clock, BookOpen, User, Bookmark, BookmarkCheck,
   Share2, Play, Loader2, AlertCircle
 } from 'lucide-react';
-import { marketplaceAPI } from '../api/backend';
+import { courseAPI, marketplaceAPI } from '../api/backend';
+import { useAuth } from '../context/AuthContext';
+
+const normalizeChaptersData = (rawChaptersData) => {
+  if (!rawChaptersData) return [];
+
+  let chaptersData = rawChaptersData;
+
+  if (typeof chaptersData === 'string') {
+    try {
+      chaptersData = JSON.parse(chaptersData);
+    } catch {
+      return [];
+    }
+  }
+
+  if (Array.isArray(chaptersData)) {
+    return chaptersData;
+  }
+
+  if (chaptersData && typeof chaptersData === 'object') {
+    if (Array.isArray(chaptersData.chapters)) {
+      return chaptersData.chapters;
+    }
+
+    return Object.keys(chaptersData)
+      .sort((a, b) => Number(a) - Number(b))
+      .map((key) => chaptersData[key])
+      .filter(Boolean);
+  }
+
+  return [];
+};
 
 const MarketplaceCourseView = () => {
   const { courseId } = useParams();
   const navigate = useNavigate();
+  const { user, isAuthenticated } = useAuth();
   const [course, setCourse] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isSaved, setIsSaved] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
 
   useEffect(() => {
     const fetchCourse = async () => {
@@ -59,9 +93,45 @@ const MarketplaceCourseView = () => {
     }
   };
 
-  const handleStartCourse = () => {
-    // Clone course to user's library or just view it
-    navigate(`/course/${courseId}`);
+  const handleStartCourse = async () => {
+    if (!course) return;
+
+    if (course.creator?.id && user?.id && course.creator.id === user.id) {
+      navigate(`/course/${courseId}`);
+      return;
+    }
+
+    if (!isAuthenticated) {
+      navigate('/auth');
+      return;
+    }
+
+    try {
+      setIsImporting(true);
+
+      const chapters = normalizeChaptersData(course.chaptersData);
+      const chaptersData = chapters.reduce((acc, chapter, index) => {
+        acc[index] = chapter;
+        return acc;
+      }, {});
+
+      const response = await courseAPI.create({
+        title: course.title,
+        description: course.description,
+        chapterDuration: course.chapterDuration,
+        difficultyLevel: course.difficultyLevel,
+        targetAudience: course.targetAudience,
+        thumbnailUrl: course.thumbnailUrl,
+        selectedChapterCount: course.chapterCount || chapters.length || 1,
+        chaptersData,
+      });
+
+      navigate(`/course/${response.course.id}`);
+    } catch (err) {
+      setError(err.message || 'Failed to add this course to your library');
+    } finally {
+      setIsImporting(false);
+    }
   };
 
   if (loading) {
@@ -95,6 +165,8 @@ const MarketplaceCourseView = () => {
     intermediate: 'bg-yellow-100 text-yellow-700',
     advanced: 'bg-red-100 text-red-700'
   };
+
+  const chapters = normalizeChaptersData(course?.chaptersData);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -173,22 +245,22 @@ const MarketplaceCourseView = () => {
             )}
 
             {/* Chapters preview */}
-            {course.chaptersData && (
+            {chapters.length > 0 && (
               <div>
                 <h2 className="text-lg font-semibold text-gray-900 mb-3">Course Content</h2>
                 <div className="bg-white rounded-xl border border-gray-200 divide-y divide-gray-100">
-                  {course.chaptersData.slice(0, 5).map((chapter, index) => (
+                  {chapters.slice(0, 5).map((chapter, index) => (
                     <div key={index} className="p-4 flex items-center gap-3">
                       <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center 
                                     text-sm font-medium text-gray-600">
                         {index + 1}
                       </div>
-                      <span className="text-gray-800">{chapter.title}</span>
+                      <span className="text-gray-800">{chapter.chapterTitle || chapter.title || `Chapter ${index + 1}`}</span>
                     </div>
                   ))}
-                  {course.chaptersData.length > 5 && (
+                  {chapters.length > 5 && (
                     <div className="p-4 text-center text-gray-500 text-sm">
-                      + {course.chaptersData.length - 5} more chapters
+                      + {chapters.length - 5} more chapters
                     </div>
                   )}
                 </div>
@@ -225,11 +297,16 @@ const MarketplaceCourseView = () => {
               {/* Actions */}
               <button
                 onClick={handleStartCourse}
+                disabled={isImporting}
                 className="w-full py-3 bg-blue-500 text-white rounded-xl font-medium 
-                         hover:bg-blue-600 transition-colors flex items-center justify-center gap-2 mb-3"
+                         hover:bg-blue-600 transition-colors flex items-center justify-center gap-2 mb-3 disabled:opacity-70 disabled:cursor-not-allowed"
               >
-                <Play size={18} />
-                Start Learning
+                {isImporting ? (
+                  <Loader2 size={18} className="animate-spin" />
+                ) : (
+                  <Play size={18} />
+                )}
+                {isImporting ? 'Adding to My Courses...' : 'Start Learning'}
               </button>
 
               <div className="flex gap-2">
