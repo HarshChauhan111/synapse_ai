@@ -30,9 +30,10 @@ const getModel = () => {
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 /**
- * Retry wrapper with exponential backoff for rate limit errors
+ * Retry wrapper - retries Gemini API call on ANY failure
+ * Simple fallback: if API call fails, try again once
  */
-const withRetry = async (fn, maxRetries = 4, initialDelay = 3000) => {
+const withRetry = async (fn, maxRetries = 1, initialDelay = 2000) => {
   let lastError;
   
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
@@ -42,24 +43,16 @@ const withRetry = async (fn, maxRetries = 4, initialDelay = 3000) => {
       lastError = error;
       const errorMessage = error?.message || error?.toString() || '';
       
-      // Retry on quota/rate limit errors OR generic API errors
-      const isRetryableError = errorMessage.includes('quota') || 
-                               errorMessage.includes('rate') ||
-                               errorMessage.includes('429') ||
-                               errorMessage.includes('500') ||
-                               errorMessage.includes('503') ||
-                               errorMessage.includes('RESOURCE_EXHAUSTED') ||
-                               errorMessage.includes('UNAVAILABLE') ||
-                               errorMessage.includes('INTERNAL') ||
-                               errorMessage.includes('Invalid response format');
-      
-      if (!isRetryableError || attempt === maxRetries) {
+      // If this is the last attempt, throw the error
+      if (attempt === maxRetries) {
+        console.error(`Gemini API failed after ${maxRetries + 1} attempts:`, errorMessage);
         throw error;
       }
       
-      // Exponential backoff: 3s, 6s, 12s, 24s
+      // Log and retry on ANY failure
       const delay = initialDelay * Math.pow(2, attempt);
-      console.log(`API error. Retrying in ${delay/1000}s... (attempt ${attempt + 1}/${maxRetries})`);
+      console.warn(`Gemini API call failed: ${errorMessage}`);
+      console.log(`Retrying Gemini API in ${delay/1000}s... (attempt ${attempt + 2}/${maxRetries + 1})`);
       await sleep(delay);
     }
   }
